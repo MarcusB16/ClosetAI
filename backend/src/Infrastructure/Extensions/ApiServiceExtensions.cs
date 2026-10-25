@@ -13,6 +13,7 @@ public static class ApiServiceExtensions
     public static IServiceCollection AddClosetApi(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddControllers().AddJsonOptions(json => ApiJson.Configure(json.JsonSerializerOptions));
+        services.ConfigureHttpJsonOptions(json => ApiJson.Configure(json.SerializerOptions));
         services.AddProblemDetails();
         services.AddExceptionHandler<ApiExceptionHandler>();
         services.AddHttpContextAccessor();
