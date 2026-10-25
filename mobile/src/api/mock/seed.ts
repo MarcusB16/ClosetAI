@@ -1,0 +1,67 @@
+import type { Item, Outfit } from '@/domain/types';
+
+/** Example wardrobe. `daysAgo` values become real dates relative to the day the data is seeded. */
+type SeedItem = Omit<Item, 'lastWorn' | 'addedAt'> & { lastDaysAgo: number };
+
+export const seedItems: SeedItem[] = [
+  { id: 't1', category: 'shirts', slot: 'top', type: 'shirt', variant: { pocket: '1' }, name: 'White oxford shirt', brand: 'J.Crew', color: '#F3F2EE', colorName: 'White', formality: 2, timesWorn: 18, price: 68, fabric: '100% cotton oxford', size: 'M', lastDaysAgo: 13 },
+  { id: 't2', category: 'shirts', slot: 'top', type: 'shirt', variant: { pocket: '1' }, name: 'Light blue oxford', brand: 'J.Crew', color: '#BCD0E6', colorName: 'Sky blue', formality: 2, timesWorn: 12, price: 68, fabric: '100% cotton oxford', size: 'M', lastDaysAgo: 21 },
+  { id: 't3', category: 'shirts', slot: 'top', type: 'tee', name: 'Black crew tee', brand: 'COS', color: '#1F1F21', colorName: 'Black', formality: 1, timesWorn: 24, price: 35, fabric: '100% organic cotton', size: 'M', lastDaysAgo: 17 },
+  { id: 't4', category: 'shirts', slot: 'top', type: 'tee', name: 'White heavyweight tee', brand: 'Uniqlo', color: '#F7F7F5', colorName: 'White', formality: 1, timesWorn: 31, price: 20, fabric: '100% cotton jersey', size: 'M', lastDaysAgo: 16 },
+  { id: 't5', category: 'shirts', slot: 'top', type: 'sweater', name: 'Navy merino crewneck', brand: 'Everlane', color: '#25314F', colorName: 'Navy', formality: 2, timesWorn: 9, price: 98, fabric: '100% merino wool', size: 'M', lastDaysAgo: 19, keywords: ['merino'] },
+  { id: 't6', category: 'shirts', slot: 'top', type: 'sweater', variant: { cable: '1' }, name: 'Oatmeal cable knit', brand: 'COS', color: '#D8CCB4', colorName: 'Oatmeal', formality: 1, timesWorn: 4, price: 120, fabric: '70% wool, 30% alpaca', size: 'M', lastDaysAgo: 213, keywords: ['cable', 'knit'] },
+  { id: 't7', category: 'shirts', slot: 'top', type: 'tee', variant: { stripe: '#1E2A4A' }, name: 'Breton stripe tee', brand: 'Saint James', color: '#F2F0EA', colorName: 'Ecru / navy', formality: 1, timesWorn: 6, price: 95, fabric: '100% cotton', size: 'M', lastDaysAgo: 47, keywords: ['breton', 'stripe'] },
+
+  { id: 'b1', category: 'pants', slot: 'bottom', type: 'jeans', name: 'Dark indigo jeans', brand: 'A.P.C.', color: '#24334F', colorName: 'Indigo', formality: 1.2, timesWorn: 40, price: 220, fabric: '14oz cotton denim', size: '32', lastDaysAgo: 14, keywords: ['indigo'] },
+  { id: 'b2', category: 'pants', slot: 'bottom', type: 'pants', name: 'Stone chinos', brand: 'Bonobos', color: '#C8B898', colorName: 'Stone', formality: 2, timesWorn: 15, price: 98, fabric: '98% cotton twill', size: '32', lastDaysAgo: 20, keywords: ['chinos'] },
+  { id: 'b3', category: 'pants', slot: 'bottom', type: 'pants', variant: { crease: '1' }, name: 'Charcoal wool trousers', brand: 'Suitsupply', color: '#3B3C40', colorName: 'Charcoal', formality: 2.7, timesWorn: 8, price: 149, fabric: '100% wool flannel', size: '32', lastDaysAgo: 15 },
+  { id: 'b4', category: 'pants', slot: 'bottom', type: 'pants', name: 'Olive chinos', brand: 'J.Crew', color: '#5E6142', colorName: 'Olive', formality: 1.5, timesWorn: 7, price: 80, fabric: '98% cotton twill', size: '32', lastDaysAgo: 21 },
+  { id: 'b5', category: 'pants', slot: 'bottom', type: 'jeans', name: 'Black slim jeans', brand: "Levi's", color: '#1F1F22', colorName: 'Black', formality: 1.4, timesWorn: 11, price: 90, fabric: 'Stretch cotton denim', size: '32', lastDaysAgo: 12, keywords: ['black jeans'] },
+  { id: 'b6', category: 'pants', slot: 'bottom', type: 'shorts', noRain: true, name: 'Navy shorts', brand: 'Uniqlo', color: '#2B3654', colorName: 'Navy', formality: 1, timesWorn: 9, price: 30, fabric: 'Cotton twill', size: '32', lastDaysAgo: 41 },
+
+  { id: 'o1', category: 'jackets', slot: 'outer', type: 'coat', name: 'Camel overcoat', brand: 'Reiss', color: '#B3865A', colorName: 'Camel', formality: 2.4, timesWorn: 3, price: 450, fabric: '80% wool, 20% cashmere', size: 'M', lastDaysAgo: 203, keywords: ['overcoat', 'camel'] },
+  { id: 'o2', category: 'jackets', slot: 'outer', type: 'blazer', name: 'Navy blazer', brand: 'Suitsupply', color: '#1F2842', colorName: 'Navy', formality: 2.5, timesWorn: 14, price: 299, fabric: 'Wool hopsack', size: '40R', lastDaysAgo: 23, keywords: ['blazer'] },
+  { id: 'o3', category: 'jackets', slot: 'outer', type: 'jacket', variant: { style: 'denim' }, name: 'Denim jacket', brand: "Levi's", color: '#5D7DA6', colorName: 'Mid wash', formality: 1, timesWorn: 10, price: 98, fabric: 'Cotton denim', size: 'M', lastDaysAgo: 19, keywords: ['denim jacket'] },
+  { id: 'o4', category: 'jackets', slot: 'outer', type: 'jacket', variant: { style: 'bomber' }, name: 'Black bomber', brand: 'Alpha Industries', color: '#202124', colorName: 'Black', formality: 1.2, timesWorn: 6, price: 160, fabric: 'Nylon flight satin', size: 'M', lastDaysAgo: 26, rainOk: true, keywords: ['bomber'] },
+  { id: 'o5', category: 'jackets', slot: 'outer', type: 'jacket', variant: { style: 'waxed' }, name: 'Olive field jacket', brand: 'Barbour', color: '#4F5236', colorName: 'Olive', formality: 1.7, timesWorn: 5, price: 395, fabric: 'Waxed cotton', size: 'M', lastDaysAgo: 29, rainOk: true, keywords: ['field jacket', 'barbour'] },
+
+  { id: 's1', category: 'shoes', slot: 'shoes', type: 'sneaker', variant: { sole: '#F6F6F2' }, name: 'White leather sneakers', brand: 'Common Projects', color: '#F2F1EC', colorName: 'White', formality: 1.3, timesWorn: 46, price: 425, fabric: 'Italian calf leather', size: '10', lastDaysAgo: 12, keywords: ['white sneakers', 'sneakers'] },
+  { id: 's2', category: 'shoes', slot: 'shoes', type: 'derby', name: 'Blue suede derbies', brand: 'Grenson', color: '#2F4C8E', colorName: 'Cobalt suede', formality: 2, timesWorn: 5, price: 310, fabric: 'Calf suede, rubber sole', size: '10', lastDaysAgo: 27, keywords: ['blue suede', 'suede'] },
+  { id: 's3', category: 'shoes', slot: 'shoes', type: 'loafer', name: 'Brown penny loafers', brand: 'G.H. Bass', color: '#5B3A22', colorName: 'Dark brown', formality: 2.2, timesWorn: 13, price: 165, fabric: 'Polished leather', size: '10', lastDaysAgo: 20, keywords: ['loafer'] },
+  { id: 's4', category: 'shoes', slot: 'shoes', type: 'boot', name: 'Black chelsea boots', brand: 'R.M. Williams', color: '#1B1B1C', colorName: 'Black', formality: 2, timesWorn: 19, price: 595, fabric: 'Yearling leather', size: '10', lastDaysAgo: 10, rainOk: true, keywords: ['chelsea', 'boots'] },
+  { id: 's5', category: 'shoes', slot: 'shoes', type: 'sneaker', variant: { sole: '#EDEDE8', stripe: '#2B3CD6' }, name: 'Grey runners', brand: 'New Balance', color: '#A3A6AA', colorName: 'Grey', formality: 1, timesWorn: 22, price: 130, fabric: 'Suede and mesh', size: '10', lastDaysAgo: 11, keywords: ['runners', 'new balance'] },
+
+  { id: 'a1', category: 'accessories', slot: 'acc', type: 'watch', variant: { strap: '#463A2C', dial: '#1D2331' }, name: 'Steel field watch', brand: 'Hamilton', color: '#C9CBCF', colorName: 'Steel', formality: 2, timesWorn: 212, price: 495, fabric: 'Steel case, leather strap', size: '38mm', lastDaysAgo: 1, keywords: ['watch'] },
+  { id: 'a2', category: 'accessories', slot: 'acc', type: 'belt', name: 'Brown leather belt', brand: "Anderson's", color: '#5A3A22', colorName: 'Brown', formality: 2, timesWorn: 48, price: 150, fabric: 'Bridle leather', size: '34', lastDaysAgo: 6, keywords: ['belt'] },
+  { id: 'a3', category: 'accessories', slot: 'acc', type: 'sunglasses', noRain: true, name: 'Tortoise sunglasses', brand: 'Ray-Ban', color: '#6A4321', colorName: 'Tortoise', formality: 1, timesWorn: 30, price: 180, fabric: 'Acetate frame', size: '50', lastDaysAgo: 32, keywords: ['sunglasses'] },
+  { id: 'a4', category: 'accessories', slot: 'acc', type: 'scarf', name: 'Grey wool scarf', brand: 'Acne Studios', color: '#8E9094', colorName: 'Grey melange', formality: 1.8, timesWorn: 12, price: 180, fabric: '100% wool', size: 'One size', lastDaysAgo: 205, keywords: ['scarf'] },
+  { id: 'a5', category: 'accessories', slot: 'acc', type: 'beanie', name: 'Navy beanie', brand: 'Arket', color: '#26324F', colorName: 'Navy', formality: 1, timesWorn: 16, price: 35, fabric: 'Rib-knit wool', size: 'One size', lastDaysAgo: 214, keywords: ['beanie'] },
+  { id: 'a6', category: 'accessories', slot: 'acc', type: 'tote', variant: { trim: '#2C3A5C' }, name: 'Canvas tote', brand: 'L.L.Bean', color: '#E6DCC6', colorName: 'Natural', formality: 1, timesWorn: 40, price: 45, fabric: 'Heavy cotton canvas', size: 'Medium', lastDaysAgo: 9, keywords: ['tote'] },
+
+  { id: 'f1', category: 'formal', slot: 'outer', type: 'blazer', variant: { inner: '#FFFFFF' }, name: 'Charcoal suit jacket', brand: 'Suitsupply', color: '#36383C', colorName: 'Charcoal', formality: 3, timesWorn: 6, price: 399, fabric: 'Super 110s wool', size: '40R', lastDaysAgo: 109, keywords: ['suit'] },
+  { id: 'f2', category: 'formal', slot: 'bottom', type: 'pants', variant: { crease: '1' }, name: 'Charcoal suit trousers', brand: 'Suitsupply', color: '#36383C', colorName: 'Charcoal', formality: 3, timesWorn: 6, fabric: 'Super 110s wool', size: '32', lastDaysAgo: 109 },
+  { id: 'f3', category: 'formal', slot: 'top', type: 'shirt', name: 'White dress shirt', brand: 'Charles Tyrwhitt', color: '#FFFFFF', colorName: 'White', formality: 3, timesWorn: 9, price: 89, fabric: 'Two-ply cotton poplin', size: '15.5/34', lastDaysAgo: 109, keywords: ['dress shirt'] },
+  { id: 'f4', category: 'formal', slot: 'acc', type: 'tie', name: 'Navy silk tie', brand: "Drake's", color: '#1F2B4E', colorName: 'Navy', formality: 3, timesWorn: 7, price: 195, fabric: '100% silk grenadine', size: '8cm', lastDaysAgo: 109, keywords: ['tie'] },
+  { id: 'f5', category: 'formal', slot: 'shoes', type: 'derby', variant: { captoe: '1' }, name: 'Black cap-toe oxfords', brand: 'Allen Edmonds', color: '#151515', colorName: 'Black', formality: 3, timesWorn: 8, price: 395, fabric: 'Calfskin', size: '10', lastDaysAgo: 109, keywords: ['oxfords'] },
+];
+
+type SeedOutfit = { id: string; title: string; ids: string[]; wornDaysAgo?: number; saved?: boolean };
+
+export const seedOutfits: SeedOutfit[] = [
+  { id: 'w1', title: 'Studio day', ids: ['o4', 't3', 'b1', 's1', 'a1'], wornDaysAgo: 1 },
+  { id: 'w2', title: 'Client lunch', ids: ['o2', 't1', 'b3', 's3', 'a1', 'a2'], wornDaysAgo: 2 },
+  { id: 'w3', title: 'Sunday walk', ids: ['o3', 't4', 'b4', 's5', 'a5'], wornDaysAgo: 3 },
+  { id: 'w4', title: 'Friday dinner', ids: ['o2', 't2', 'b1', 's2', 'a1'], wornDaysAgo: 5 },
+  { id: 'w5', title: 'Office', ids: ['o5', 't1', 'b2', 's3', 'a1', 'a2'], wornDaysAgo: 6 },
+  { id: 'w6', title: 'Office', ids: ['o4', 't5', 'b3', 's4', 'a1'], wornDaysAgo: 7 },
+  { id: 'w7', title: 'Errands', ids: ['o3', 't4', 'b1', 's1', 'a6'], wornDaysAgo: 9 },
+  { id: 'v1', title: 'Rainy Monday', ids: ['o5', 't5', 'b2', 's4', 'a1', 'a4'], saved: true },
+  { id: 'v2', title: 'Gallery opening', ids: ['o2', 't3', 'b5', 's2', 'a1'], saved: true },
+  { id: 'v3', title: 'Wedding guest', ids: ['f1', 'f3', 'f2', 'f5', 'f4', 'a1'], saved: true },
+  { id: 'v4', title: 'Sunday market', ids: ['o3', 't7', 'b4', 's1', 'a6', 'a2'], saved: true },
+];
+
+export const ootdIds = ['o5', 't5', 'b2', 's4', 'a1', 'a4'];
+
+export type { SeedItem, SeedOutfit };
+export type { Outfit };
