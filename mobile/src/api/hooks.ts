@@ -31,13 +31,13 @@ export function useCompleteOnboarding() {
   return useMutation({ mutationFn: () => api.completeOnboarding(), onSuccess: p => qc.setQueryData(keys.profile, p) });
 }
 
-/** One try-on per outfit look. Cached, so reopening the same outfit doesn't call the image model again. */
+/** One try-on per outfit look. Ready results are cached, so reopening the same outfit doesn't call the image model again. */
 export const useTryOn = (outfit: Outfit | undefined) =>
   useQuery({
     queryKey: ['tryOn', outfit?.id, JSON.stringify(outfit?.pieces)],
     queryFn: () => api.tryOn(outfit!.id),
     enabled: !!outfit,
-    staleTime: Infinity,
+    staleTime: query => (query.state.data?.status === 'ready' ? Infinity : 0),
     gcTime: 1000 * 60 * 60,
     retry: 0,
   });
@@ -62,6 +62,8 @@ function usePutOutfit() {
   return (o: Outfit) => {
     qc.setQueryData(keys.outfit(o.id), o);
     qc.invalidateQueries({ queryKey: keys.saved });
+    qc.invalidateQueries({ queryKey: keys.today });
+    qc.invalidateQueries({ queryKey: ['alternatives', o.id] });
   };
 }
 

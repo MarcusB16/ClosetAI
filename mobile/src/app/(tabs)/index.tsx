@@ -4,10 +4,11 @@ import { useState } from 'react';
 import { Image, Pressable, View } from 'react-native';
 
 import { useContext, useItemMap, useItems, useLogWear, useProfile, useTodaysOutfit } from '@/api/hooks';
+import { useAttempt } from '@/api/useAttempt';
 import { Board, resolvePieces } from '@/components/Board';
 import { ItemTile } from '@/components/ItemTile';
 import { useToast } from '@/components/Toast';
-import { Btn, Chip, HScroll, PillInput, Row, Screen, SectionHead, T } from '@/components/ui';
+import { Btn, Chip, ErrorState, HScroll, PillInput, Row, Screen, SectionHead, T } from '@/components/ui';
 import { daysSince, fmtMonth } from '@/domain/dates';
 import { startStyling } from '@/domain/navigation';
 import { PROMPTS, QUICK } from '@/domain/prompts';
@@ -20,7 +21,8 @@ export default function Home() {
   const { data: ctx } = useContext();
   const { data: items } = useItems();
   const itemMap = useItemMap();
-  const { data: ootd } = useTodaysOutfit();
+  const { data: ootd, isError: ootdFailed, refetch: refetchOotd } = useTodaysOutfit();
+  const attempt = useAttempt();
   const wear = useLogWear();
   const { data: profile } = useProfile();
 
@@ -78,13 +80,21 @@ export default function Home() {
           <T variant="small" tone="muted">{pieceText}</T>
           <Row>
             <Btn label="Wear this" icon="check" loading={wear.isPending} onPress={async () => {
-              await wear.mutateAsync(ootd.id);
+              const entry = await attempt(() => wear.mutateAsync(ootd.id), "Couldn't log this outfit. Try again.");
+              if (!entry) return;
               Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
               toast("Logged for today. It's in Outfits.");
             }} />
             <Btn label="See it on me" icon="person" variant="ghost" onPress={() => router.push(`/try-on/${ootd.id}`)} />
             <Btn label="Change something" variant="ghost" onPress={() => router.push(`/outfit/${ootd.id}`)} />
           </Row>
+        </View>
+      )}
+
+      {ootdFailed && !ootd && (
+        <View style={{ gap: 14 }}>
+          <SectionHead title="Outfit of the day" />
+          <ErrorState message="Couldn't load today's outfit." onRetry={() => refetchOotd()} />
         </View>
       )}
 

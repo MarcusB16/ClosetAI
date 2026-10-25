@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useProfile } from '@/api/hooks';
 import { Icon, type IconName } from '@/components/Icon';
+import { ErrorScreen } from '@/components/ui';
 import { fonts, useTheme } from '@/theme';
 
 type TabBarProps = Parameters<NonNullable<React.ComponentProps<typeof Tabs>['tabBar']>>[0];
@@ -45,7 +46,8 @@ function TabBar({ state, navigation }: TabBarProps) {
 }
 
 export default function TabsLayout() {
-  const { data: profile } = useProfile();
+  const { data: profile, isError, refetch } = useProfile();
+  if (isError && !profile) return <ErrorScreen message="Couldn't reach Closet." onRetry={() => refetch()} />;
   if (profile && !profile.onboarded) return <Redirect href="/setup" />;
   return (
     <Tabs screenOptions={{ headerShown: false }} tabBar={props => <TabBar {...props} />}>

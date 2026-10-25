@@ -5,7 +5,7 @@ import { TextInput, View } from 'react-native';
 import { useItems } from '@/api/hooks';
 import { Icon } from '@/components/Icon';
 import { ItemTile } from '@/components/ItemTile';
-import { Chip, HScroll, Screen, T } from '@/components/ui';
+import { Chip, ErrorState, HScroll, Loading, Screen, T } from '@/components/ui';
 import { daysSince, fmtMonth } from '@/domain/dates';
 import { CATEGORY_LABEL, type Category } from '@/domain/types';
 import { fonts, useTheme } from '@/theme';
@@ -14,7 +14,7 @@ const CATS: ('all' | Category)[] = ['all', 'shirts', 'pants', 'jackets', 'shoes'
 
 export default function Closet() {
   const t = useTheme();
-  const { data: items = [] } = useItems();
+  const { data: items = [], isLoading, isError, refetch } = useItems();
   const [cat, setCat] = useState<'all' | Category>('all');
   const [q, setQ] = useState('');
 
@@ -28,6 +28,8 @@ export default function Closet() {
     if (i.lastWorn && daysSince(i.lastWorn) > 90) return { text: `Not worn since ${fmtMonth(i.lastWorn)}`, accent: false };
     return undefined;
   };
+
+  if (isLoading) return <Loading />;
 
   return (
     <Screen>
@@ -45,7 +47,8 @@ export default function Closet() {
         {CATS.map(c => <Chip key={c} label={c === 'all' ? 'All' : CATEGORY_LABEL[c]} selected={cat === c} onPress={() => setCat(c)} />)}
       </HScroll>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', rowGap: 16 }}>
-        {list.length === 0 && <T tone="muted">Nothing matches “{q}”. Try a color or a brand.</T>}
+        {isError && items.length === 0 && <ErrorState message="Couldn't load your closet." onRetry={() => refetch()} />}
+        {!isError && list.length === 0 && <T tone="muted">Nothing matches “{q}”. Try a color or a brand.</T>}
         {list.map(i => {
           const b = badge(i);
           return (

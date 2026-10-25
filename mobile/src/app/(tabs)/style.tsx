@@ -3,16 +3,16 @@ import { useEffect, useRef, useState } from 'react';
 import { Pressable, TextInput, View } from 'react-native';
 
 import { useContext, useItems, useStyleOutfit } from '@/api/hooks';
+import { useAttempt } from '@/api/useAttempt';
 import { Icon } from '@/components/Icon';
 import { StylingOverlay } from '@/components/StylingOverlay';
-import { useToast } from '@/components/Toast';
 import { Btn, Chip, Row, Screen, T } from '@/components/ui';
 import { PROMPTS } from '@/domain/prompts';
 import { fonts, useTheme } from '@/theme';
 
 export default function StyleRequest() {
   const t = useTheme();
-  const toast = useToast();
+  const attempt = useAttempt();
   const params = useLocalSearchParams<{ prompt?: string; lock?: string; n?: string }>();
   const [prompt, setPrompt] = useState('');
   const [avoid, setAvoid] = useState(false);
@@ -24,12 +24,11 @@ export default function StyleRequest() {
   const run = async (text: string, lock?: string) => {
     const p = text.trim() || PROMPTS[0];
     setPrompt(p);
-    try {
-      const outfit = await styleOutfit.mutateAsync({ prompt: p, lockItemId: lock || undefined, avoidRecent: avoid });
-      router.push(`/outfit/${outfit.id}`);
-    } catch {
-      toast("Couldn't build an outfit. Check your connection and try again.");
-    }
+    const outfit = await attempt(
+      () => styleOutfit.mutateAsync({ prompt: p, lockItemId: lock || undefined, avoidRecent: avoid }),
+      "Couldn't build an outfit. Check your connection and try again.",
+    );
+    if (outfit) router.push(`/outfit/${outfit.id}`);
   };
 
   // Requests started from Home, a chip or an item page arrive as params.

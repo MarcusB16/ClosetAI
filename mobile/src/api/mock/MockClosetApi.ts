@@ -127,7 +127,7 @@ export class MockClosetApi implements ClosetApi {
     // The real call returns a background-removed cutout and AI tags. The mock echoes the photo.
     return {
       name: '', category: 'shirts', colorName: '', color: '#8A8A84',
-      formality: 1.5, seasons: ['Fall', 'Winter'], cutoutUri: photoUri,
+      formality: 2, seasons: ['Fall', 'Winter'], cutoutUri: photoUri,
     };
   }
 

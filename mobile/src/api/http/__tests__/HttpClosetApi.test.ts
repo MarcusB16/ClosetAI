@@ -35,7 +35,7 @@ const item = {
 
 describe('HttpClosetApi requests', () => {
   it('strips trailing slashes from the base url', async () => {
-    const fetchMock = jest.fn(async () => jsonResponse({}));
+    const fetchMock = jest.fn(async (_url: unknown) => jsonResponse({}));
     const api = new HttpClosetApi({ baseUrl: `${BASE}//`, fetchImpl: fetchMock as unknown as typeof fetch });
     await api.getContext();
     expect(fetchMock.mock.calls[0][0]).toBe(`${BASE}/api/context`);

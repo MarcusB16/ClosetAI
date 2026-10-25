@@ -159,6 +159,24 @@ export function Loading() {
   return <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: t.paper }}><ActivityIndicator color={t.ink2} /></View>;
 }
 
+export function ErrorState({ message, onRetry }: { message: string; onRetry: () => void }) {
+  return (
+    <View style={{ gap: 12, alignItems: 'flex-start' }} accessibilityLiveRegion="polite">
+      <T tone="muted">{message}</T>
+      <Btn label="Try again" icon="again" variant="ghost" onPress={onRetry} />
+    </View>
+  );
+}
+
+export function ErrorScreen({ message, onRetry }: { message: string; onRetry: () => void }) {
+  const t = useTheme();
+  return (
+    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: t.paper, padding: 24 }}>
+      <ErrorState message={message} onRetry={onRetry} />
+    </View>
+  );
+}
+
 const s = StyleSheet.create({
   btn: { borderRadius: 999, paddingVertical: 13, paddingHorizontal: 20, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
   btnText: { fontFamily: fonts.bodySemi, fontSize: 15 },

@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useItemMap, useItems, useSaved, useWorn } from '@/api/hooks';
 import { MiniBoard, resolvePieces } from '@/components/Board';
 import { Garment } from '@/components/Garment';
-import { Btn, HScroll, IconBtn, Loading, Screen, SectionHead, T } from '@/components/ui';
+import { Btn, ErrorScreen, HScroll, IconBtn, Loading, Screen, SectionHead, T } from '@/components/ui';
 import { fmtDay, fmtMonthDay } from '@/domain/dates';
 import { startStyling } from '@/domain/navigation';
 import { CATEGORY_LABEL, type Item, type Outfit } from '@/domain/types';
@@ -27,11 +27,12 @@ export default function ItemScreen() {
   const t = useTheme();
   const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { data: items } = useItems();
+  const { data: items, isError, refetch } = useItems();
   const itemMap = useItemMap();
   const { data: worn = [] } = useWorn();
   const { data: saved = [] } = useSaved();
   const item = items?.find(i => i.id === id);
+  if (isError && !items) return <ErrorScreen message="Couldn't load your closet." onRetry={() => refetch()} />;
   if (!item) return <Loading />;
 
   const uses = (o: Outfit) => [o.pieces.outer, o.pieces.top, o.pieces.bottom, o.pieces.shoes, ...o.pieces.acc].includes(item.id);
