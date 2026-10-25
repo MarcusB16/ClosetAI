@@ -42,7 +42,24 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "typecheck": "tsc --noEmit",
-    "lint": "expo lint"
+    "lint": "expo lint",
+    "test": "jest",
+    "test:coverage": "jest --coverage",
+    "stub-server": "node scripts/stub-server.js"
+  },
+  "jest": {
+    "preset": "jest-expo",
+    "setupFiles": [
+      "<rootDir>/jest.setup.js"
+    ],
+    "moduleNameMapper": {
+      "^@/(.*)$": "<rootDir>/src/$1"
+    },
+    "collectCoverageFrom": [
+      "src/api/**/*.{ts,tsx}",
+      "!src/api/mock/**",
+      "src/components/Toast.tsx"
+    ]
   },
   "private": true
 }
