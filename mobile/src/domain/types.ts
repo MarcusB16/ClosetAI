@@ -85,6 +85,8 @@ export interface ItemSuggestion {
   seasons: string[];
   fabric?: string;
   cutoutUri: string;
+  slot?: Slot;
+  type?: GarmentType;
 }
 
 /** Set once during first-launch setup; used for every try-on. */
