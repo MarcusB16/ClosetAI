@@ -1,0 +1,14 @@
+.git
+.claude
+.env
+mobile
+docs
+**/bin
+**/obj
+**/*.db
+**/*.db-shm
+**/*.db-wal
+backend/src/media
+backend/tests
+**/.vs
+**/.DS_Store
