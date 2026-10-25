@@ -6,7 +6,7 @@ public class Outfit
     public string Title { get; set; } = "";
     public string? Prompt { get; set; }
     public string? Note { get; set; }
-    public OutfitPieces Pieces { get; set; } = new(null, "", "", "", []);
+    public OutfitPieces Pieces { get; set; } = new();
     public bool Saved { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
 }

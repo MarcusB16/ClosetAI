@@ -4,3 +4,6 @@ obj/
 *.user
 *.db
 .DS_Store
+media/
+*.db-shm
+*.db-wal
