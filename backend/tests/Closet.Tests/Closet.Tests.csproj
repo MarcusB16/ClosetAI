@@ -20,9 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Closet.Api\Closet.Api.csproj" />
-    <ProjectReference Include="..\..\src\Closet.Core\Closet.Core.csproj" />
-    <ProjectReference Include="..\..\src\Closet.Data\Closet.Data.csproj" />
+    <ProjectReference Include="..\..\src\ClosetAPI.csproj" />
   </ItemGroup>
 
 </Project>

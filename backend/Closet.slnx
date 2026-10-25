@@ -1,8 +1,6 @@
 <Solution>
   <Folder Name="/src/">
-    <Project Path="src/Closet.Api/Closet.Api.csproj" />
-    <Project Path="src/Closet.Core/Closet.Core.csproj" />
-    <Project Path="src/Closet.Data/Closet.Data.csproj" />
+    <Project Path="src/ClosetAPI.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Closet.Tests/Closet.Tests.csproj" />
