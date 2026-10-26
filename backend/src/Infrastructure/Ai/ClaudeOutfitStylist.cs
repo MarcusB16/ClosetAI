@@ -15,7 +15,7 @@ public class ClaudeOutfitStylist(IStructuredLlm llm) : IOutfitStylist
         "When asked to avoid recent wears, skip items worn in the last 7 days. " +
         "The title is a short name for the outfit. The note is one or two friendly sentences explaining the choices.";
 
-    public async Task<StyledOutfit> StyleAsync(StyleBrief brief, CancellationToken cancellationToken)
+    public async Task<StyledOutfit> StyleOutfitAsync(StyleBrief brief, CancellationToken cancellationToken)
     {
         EnsureClosetCanBeStyled(brief.Closet);
         var request = new
@@ -24,13 +24,13 @@ public class ClaudeOutfitStylist(IStructuredLlm llm) : IOutfitStylist
             prompt = brief.Prompt,
             lockedItemId = brief.LockItemId,
             avoidRecentlyWorn = brief.AvoidRecent,
-            context = ContextOf(brief.Context),
-            closet = ClosetOf(brief.Closet),
+            context = DescribeContext(brief.Context),
+            closet = DescribeCloset(brief.Closet),
         };
-        return await AskAsync(request, brief.Closet, brief.LockItemId, cancellationToken);
+        return await RequestOutfitFromClaudeAsync(request, brief.Closet, brief.LockItemId, cancellationToken);
     }
 
-    public async Task<StyledOutfit> RefineAsync(RefineBrief brief, CancellationToken cancellationToken)
+    public async Task<StyledOutfit> RefineOutfitAsync(RefineBrief brief, CancellationToken cancellationToken)
     {
         EnsureClosetCanBeStyled(brief.Closet);
         var request = new
@@ -47,20 +47,20 @@ public class ClaudeOutfitStylist(IStructuredLlm llm) : IOutfitStylist
                 shoes = brief.Current.Pieces.Shoes,
                 acc = brief.Current.Pieces.Acc,
             },
-            context = ContextOf(brief.Context),
-            closet = ClosetOf(brief.Closet),
+            context = DescribeContext(brief.Context),
+            closet = DescribeCloset(brief.Closet),
         };
-        return await AskAsync(request, brief.Closet, requiredItemId: null, cancellationToken);
+        return await RequestOutfitFromClaudeAsync(request, brief.Closet, requiredItemId: null, cancellationToken);
     }
 
-    private async Task<StyledOutfit> AskAsync(object request, IReadOnlyList<Item> closet, string? requiredItemId, CancellationToken cancellationToken)
+    private async Task<StyledOutfit> RequestOutfitFromClaudeAsync(object request, IReadOnlyList<Item> closet, string? requiredItemId, CancellationToken cancellationToken)
     {
         var structured = new StructuredRequest(
             SystemPrompt,
             JsonSerializer.Serialize(request, ClosetJson.Options),
-            OutfitSchema.For(closet));
-        var json = await llm.CompleteAsync(structured, cancellationToken);
-        return OutfitResponseReader.Read(json, closet, requiredItemId);
+            OutfitSchema.ForCloset(closet));
+        var json = await llm.CompleteWithJsonSchemaAsync(structured, cancellationToken);
+        return OutfitResponseReader.ReadOutfit(json, closet, requiredItemId);
     }
 
     private static void EnsureClosetCanBeStyled(IReadOnlyList<Item> closet)
@@ -72,7 +72,7 @@ public class ClaudeOutfitStylist(IStructuredLlm llm) : IOutfitStylist
         }
     }
 
-    private static object ContextOf(StyleContext context) => new
+    private static object DescribeContext(StyleContext context) => new
     {
         date = context.Date.ToString("yyyy-MM-dd"),
         weekday = context.Weekday,
@@ -81,7 +81,7 @@ public class ClaudeOutfitStylist(IStructuredLlm llm) : IOutfitStylist
         rain = context.Rain,
     };
 
-    private static IEnumerable<object> ClosetOf(IReadOnlyList<Item> closet) => closet.Select(item => new
+    private static IEnumerable<object> DescribeCloset(IReadOnlyList<Item> closet) => closet.Select(item => new
     {
         id = item.Id,
         name = item.Name,

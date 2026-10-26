@@ -28,16 +28,16 @@ public class WearsController(
     [ProducesResponseType<WearEntryResponse>(StatusCodes.Status201Created)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound, "application/problem+json")]
     [ResponseExample<WearEntryExample>(StatusCodes.Status201Created)]
-    public async Task<ActionResult<WearEntryResponse>> Log(string id, CancellationToken cancellationToken)
+    public async Task<ActionResult<WearEntryResponse>> LogWear(string id, CancellationToken cancellationToken)
     {
         var outfit = await outfits.GetAsync(id, cancellationToken);
-        var today = contextProvider.Current().Date;
+        var today = contextProvider.GetCurrentStyleContext().Date;
         var closet = await items.ListNewestFirstAsync(cancellationToken);
 
         var previous = await wears.FindByDateAsync(today, cancellationToken);
         var replacedOutfit = previous is null ? null : await outfits.FindAsync(previous.OutfitId, cancellationToken);
 
-        WearRecorder.Apply(today, outfit, replacedOutfit, closet);
+        WearRecorder.RecordWear(today, outfit, replacedOutfit, closet);
         if (previous is null) wears.Add(new WearEntry { Date = today, OutfitId = outfit.Id });
         else previous.OutfitId = outfit.Id;
         await unitOfWork.SaveChangesAsync(cancellationToken);

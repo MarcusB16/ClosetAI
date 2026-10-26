@@ -5,7 +5,7 @@ namespace ClosetAPI.Domain.Outfits;
 
 public static partial class SlotInstructionParser
 {
-    public static Slot? Parse(string instruction)
+    public static Slot? ParseSlot(string instruction)
     {
         var text = instruction.ToLowerInvariant();
         if (ShoesPattern().IsMatch(text)) return Slot.Shoes;

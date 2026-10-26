@@ -14,18 +14,18 @@ public partial class ClaudeItemTagger(IStructuredLlm llm) : IItemTagger
         "the dominant colour as a name and a #RRGGBB hex value, a formality of 1 (casual), 2 (smart) or 3 (formal), " +
         "the seasons it suits, and the likely fabric (empty string if unknown).";
 
-    public async Task<ItemTags> TagAsync(PhotoContent photo, CancellationToken cancellationToken)
+    public async Task<ItemTags> TagPhotoAsync(PhotoContent photo, CancellationToken cancellationToken)
     {
         var request = new StructuredRequest(
             SystemPrompt,
             "Tag the item in this photo.",
             ItemSuggestionSchema.Build(),
             photo);
-        var json = await llm.CompleteAsync(request, cancellationToken);
-        return Read(json);
+        var json = await llm.CompleteWithJsonSchemaAsync(request, cancellationToken);
+        return ReadTags(json);
     }
 
-    private static ItemTags Read(JsonElement json)
+    private static ItemTags ReadTags(JsonElement json)
     {
         var color = json.RequiredString("color");
         if (!HexColorPattern().IsMatch(color))

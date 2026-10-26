@@ -11,7 +11,7 @@ public class RulesOutfitStylistTests
     private readonly RulesOutfitStylist _stylist = new();
 
     private Task<StyledOutfit> Style(string prompt, List<Item> closet, StyleContext? context = null, string? lockId = null, bool avoidRecent = false, int variation = 4) =>
-        _stylist.StyleAsync(new StyleBrief(prompt, lockId, avoidRecent, closet, context ?? TestClosets.Dry, variation), CancellationToken.None);
+        _stylist.StyleOutfitAsync(new StyleBrief(prompt, lockId, avoidRecent, closet, context ?? TestClosets.Dry, variation), CancellationToken.None);
 
     private static Item Find(List<Item> closet, string id) => closet.Single(item => item.Id == id);
 
@@ -175,7 +175,7 @@ public class RulesOutfitStylistTests
         var first = await Style("anything", closet, variation: 9);
         var second = await Style("anything", closet, variation: 9);
 
-        Assert.Equal(first.Pieces.AllIds().ToList(), second.Pieces.AllIds().ToList());
+        Assert.Equal(first.Pieces.AllItemIds().ToList(), second.Pieces.AllItemIds().ToList());
     }
 
     [Fact]
@@ -185,7 +185,7 @@ public class RulesOutfitStylistTests
 
         var outfits = new HashSet<string>();
         for (var variation = 1; variation <= 30; variation++)
-            outfits.Add((await Style("anything", closet, variation: variation)).Pieces.Key());
+            outfits.Add((await Style("anything", closet, variation: variation)).Pieces.ToCacheKey());
 
         Assert.True(outfits.Count > 1);
     }
@@ -225,7 +225,7 @@ public class RulesOutfitStylistTests
             Pieces = new OutfitPieces { Outer = "o-smart", Top = "t-oxford", Bottom = "b-chino", Shoes = "s-loafer", Acc = ["a-watch"] },
         };
 
-        var refined = await _stylist.RefineAsync(new RefineBrief(current, "different shoes", closet, TestClosets.Dry, 5), CancellationToken.None);
+        var refined = await _stylist.RefineOutfitAsync(new RefineBrief(current, "different shoes", closet, TestClosets.Dry, 5), CancellationToken.None);
 
         Assert.Equal("s-sneaker", refined.Pieces.Shoes);
         Assert.Equal(current.Pieces.Top, refined.Pieces.Top);
@@ -245,9 +245,9 @@ public class RulesOutfitStylistTests
             Pieces = new OutfitPieces { Outer = "o-smart", Top = "t-oxford", Bottom = "b-chino", Shoes = "s-loafer", Acc = ["a-watch"] },
         };
 
-        var refined = await _stylist.RefineAsync(new RefineBrief(current, "other footwear", closet, TestClosets.Dry, 5), CancellationToken.None);
+        var refined = await _stylist.RefineOutfitAsync(new RefineBrief(current, "other footwear", closet, TestClosets.Dry, 5), CancellationToken.None);
 
-        Assert.Equal(current.Pieces.Key(), refined.Pieces.Key());
+        Assert.Equal(current.Pieces.ToCacheKey(), refined.Pieces.ToCacheKey());
         Assert.Equal("Same", refined.Title);
     }
 
@@ -257,7 +257,7 @@ public class RulesOutfitStylistTests
         var closet = TestClosets.Formal();
         var current = new Outfit { Title = "x", Prompt = "a day out", Pieces = new OutfitPieces { Top = "t-tee", Bottom = "b-jeans", Shoes = "s-sneaker" } };
 
-        var refined = await _stylist.RefineAsync(new RefineBrief(current, "make it a wedding", closet, TestClosets.Dry, 5), CancellationToken.None);
+        var refined = await _stylist.RefineOutfitAsync(new RefineBrief(current, "make it a wedding", closet, TestClosets.Dry, 5), CancellationToken.None);
 
         Assert.Equal("Formal", refined.Title);
     }
@@ -268,7 +268,7 @@ public class RulesOutfitStylistTests
         var closet = TestClosets.Small();
         var current = new Outfit { Title = "x", Pieces = new OutfitPieces { Top = "t-tee", Bottom = "b-jeans", Shoes = "s-sneaker" } };
 
-        var refined = await _stylist.RefineAsync(new RefineBrief(current, "more casual please", closet, TestClosets.Dry, 5), CancellationToken.None);
+        var refined = await _stylist.RefineOutfitAsync(new RefineBrief(current, "more casual please", closet, TestClosets.Dry, 5), CancellationToken.None);
 
         Assert.Equal("Easy casual", refined.Title);
     }

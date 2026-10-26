@@ -31,15 +31,15 @@ public class OutfitsController(
     [ProducesResponseType<OutfitResponse>(StatusCodes.Status200OK)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status502BadGateway, "application/problem+json")]
     [ResponseExample<OutfitExample>(StatusCodes.Status200OK)]
-    public async Task<OutfitResponse> Today(CancellationToken cancellationToken) =>
-        (await studio.TodayAsync(cancellationToken)).ToResponse();
+    public async Task<OutfitResponse> GetToday(CancellationToken cancellationToken) =>
+        (await studio.GetOrCreateTodaysOutfitAsync(cancellationToken)).ToResponse();
 
     [HttpGet("saved")]
     [EndpointSummary("List saved outfits")]
     [EndpointDescription("Returns outfits the user saved, newest first.")]
     [ProducesResponseType<List<OutfitResponse>>(StatusCodes.Status200OK)]
     [ResponseExample<OutfitListExample>(StatusCodes.Status200OK)]
-    public async Task<List<OutfitResponse>> Saved(CancellationToken cancellationToken)
+    public async Task<List<OutfitResponse>> ListSaved(CancellationToken cancellationToken)
     {
         var saved = await outfits.ListSavedNewestFirstAsync(cancellationToken);
         return saved.Select(outfit => outfit.ToResponse()).ToList();
@@ -65,7 +65,7 @@ public class OutfitsController(
     [ResponseExample<OutfitExample>(StatusCodes.Status201Created)]
     public async Task<ActionResult<OutfitResponse>> Style(StyleRequest request, CancellationToken cancellationToken)
     {
-        var outfit = await studio.StyleAsync(request.Prompt, request.LockItemId, request.AvoidRecent ?? false, cancellationToken);
+        var outfit = await studio.StyleOutfitAsync(request.Prompt, request.LockItemId, request.AvoidRecent ?? false, cancellationToken);
         return CreatedAtAction(nameof(Get), new { id = outfit.Id }, outfit.ToResponse());
     }
 
@@ -82,7 +82,7 @@ public class OutfitsController(
     public async Task<OutfitResponse> Refine(string id, RefineRequest request, CancellationToken cancellationToken)
     {
         var current = await outfits.GetAsync(id, cancellationToken);
-        return (await studio.RefineAsync(current, request.Instruction, cancellationToken)).ToResponse();
+        return (await studio.RefineOutfitAsync(current, request.Instruction, cancellationToken)).ToResponse();
     }
 
     [HttpGet("{id}/alternatives")]
@@ -92,13 +92,13 @@ public class OutfitsController(
     [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest, "application/problem+json")]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound, "application/problem+json")]
     [ResponseExample<ItemListExample>(StatusCodes.Status200OK)]
-    public async Task<List<ItemResponse>> Alternatives(string id, [FromQuery] Slot? slot, CancellationToken cancellationToken)
+    public async Task<List<ItemResponse>> ListAlternatives(string id, [FromQuery] Slot? slot, CancellationToken cancellationToken)
     {
         if (slot is null) throw new RuleViolationException("slot", "The slot query parameter is required.");
 
         var outfit = await outfits.GetAsync(id, cancellationToken);
         var closet = await items.ListNewestFirstAsync(cancellationToken);
-        return AlternativeFinder.Find(outfit.Pieces, slot.Value, closet, contextProvider.Current())
+        return AlternativeFinder.FindAlternatives(outfit.Pieces, slot.Value, closet, contextProvider.GetCurrentStyleContext())
             .Select(item => item.ToResponse())
             .ToList();
     }
@@ -118,7 +118,7 @@ public class OutfitsController(
         var replacement = await items.GetAsync(request.ItemId, cancellationToken);
         var closet = await items.ListNewestFirstAsync(cancellationToken);
 
-        outfit.Pieces = PieceReplacer.Replace(outfit.Pieces, slot, replacement, closet);
+        outfit.Pieces = PieceReplacer.ReplacePiece(outfit.Pieces, slot, replacement, closet);
         outfit.Saved = false;
         await unitOfWork.SaveChangesAsync(cancellationToken);
         return outfit.ToResponse();
@@ -134,7 +134,7 @@ public class OutfitsController(
     public async Task<OutfitResponse> Reject(string id, CancellationToken cancellationToken)
     {
         var rejected = await outfits.GetAsync(id, cancellationToken);
-        return (await studio.RejectAsync(rejected, cancellationToken)).ToResponse();
+        return (await studio.ReplaceRejectedOutfitAsync(rejected, cancellationToken)).ToResponse();
     }
 
     [HttpPut("{id}/saved")]

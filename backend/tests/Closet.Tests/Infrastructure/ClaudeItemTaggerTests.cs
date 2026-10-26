@@ -20,7 +20,7 @@ public class ClaudeItemTaggerTests
     {
         var llm = new ScriptedStructuredLlm(Json());
 
-        var tags = await new ClaudeItemTagger(llm).TagAsync(Photo, CancellationToken.None);
+        var tags = await new ClaudeItemTagger(llm).TagPhotoAsync(Photo, CancellationToken.None);
 
         Assert.Equal("Navy merino crewneck", tags.Name);
         Assert.Equal(Category.Shirts, tags.Category);
@@ -34,7 +34,7 @@ public class ClaudeItemTaggerTests
     [Fact]
     public async Task Empty_brand_and_fabric_become_null()
     {
-        var tags = await new ClaudeItemTagger(new ScriptedStructuredLlm(Json(brand: "", fabric: " "))).TagAsync(Photo, CancellationToken.None);
+        var tags = await new ClaudeItemTagger(new ScriptedStructuredLlm(Json(brand: "", fabric: " "))).TagPhotoAsync(Photo, CancellationToken.None);
 
         Assert.Null(tags.Brand);
         Assert.Null(tags.Fabric);
@@ -49,7 +49,7 @@ public class ClaudeItemTaggerTests
     {
         var tagger = new ClaudeItemTagger(new ScriptedStructuredLlm(Json(color, type, formality, category)));
 
-        await Assert.ThrowsAsync<AiProviderException>(() => tagger.TagAsync(Photo, CancellationToken.None));
+        await Assert.ThrowsAsync<AiProviderException>(() => tagger.TagPhotoAsync(Photo, CancellationToken.None));
     }
 
     [Fact]

@@ -6,7 +6,7 @@ public static class OutfitFormality
 {
     private const double UnknownItemFormality = Formality.Smart;
 
-    public static double Average(OutfitPieces pieces, IReadOnlyList<Item> closet)
+    public static double CalculateAverage(OutfitPieces pieces, IReadOnlyList<Item> closet)
     {
         var ids = new[] { pieces.Outer, pieces.Top, pieces.Bottom, pieces.Shoes }
             .Where(id => !string.IsNullOrEmpty(id));

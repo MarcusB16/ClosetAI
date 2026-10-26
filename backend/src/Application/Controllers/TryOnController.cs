@@ -38,15 +38,15 @@ public class TryOnController(
         if (string.IsNullOrEmpty(state.PersonPhotoFile))
             return new TryOnResult { Status = TryOnStatus.NeedsPhoto, Message = "Upload a full-body photo first." };
 
-        var piecesKey = outfit.Pieces.Key();
+        var piecesKey = outfit.Pieces.ToCacheKey();
         var cached = await tryOnRenders.FindAsync(outfit.Id, piecesKey, state.PersonPhotoFile, cancellationToken);
-        if (cached is not null) return Ready(cached.ImageFile, cached.Placeholder);
+        if (cached is not null) return ReadyResult(cached.ImageFile, cached.Placeholder);
 
         try
         {
             var closet = await items.ListNewestFirstAsync(cancellationToken);
-            var pieces = closet.Where(item => outfit.Pieces.AllIds().Contains(item.Id)).ToList();
-            var rendered = await renderer.RenderAsync(state.PersonPhotoFile, pieces, cancellationToken);
+            var pieces = closet.Where(item => outfit.Pieces.AllItemIds().Contains(item.Id)).ToList();
+            var rendered = await renderer.RenderTryOnAsync(state.PersonPhotoFile, pieces, cancellationToken);
 
             tryOnRenders.Add(new TryOnRender
             {
@@ -59,7 +59,7 @@ public class TryOnController(
                 CreatedAt = clock.GetUtcNow(),
             });
             await unitOfWork.SaveChangesAsync(cancellationToken);
-            return Ready(rendered.ImageFile, rendered.Placeholder);
+            return ReadyResult(rendered.ImageFile, rendered.Placeholder);
         }
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
@@ -68,7 +68,7 @@ public class TryOnController(
         }
     }
 
-    private TryOnResult Ready(string imageFile, bool placeholder) => new()
+    private TryOnResult ReadyResult(string imageFile, bool placeholder) => new()
     {
         Status = TryOnStatus.Ready,
         ImageUri = mediaUrls.UrlFor(imageFile),

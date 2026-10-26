@@ -14,7 +14,7 @@ public static class PhotoUploadReader
         await file.CopyToAsync(buffer, cancellationToken);
         var bytes = buffer.ToArray();
 
-        var problem = PhotoValidator.Validate(bytes);
+        var problem = PhotoValidator.FindValidationError(bytes);
         if (problem is not null) throw new RuleViolationException("photo", problem);
 
         return new PhotoContent(bytes, PhotoValidator.DetectContentType(bytes)!);

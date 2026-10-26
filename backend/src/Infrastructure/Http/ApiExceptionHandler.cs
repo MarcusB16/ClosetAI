@@ -11,7 +11,7 @@ public class ApiExceptionHandler(IProblemDetailsService problemDetailsService, I
         var problem = exception switch
         {
             EntityNotFoundException => new ProblemDetails { Status = StatusCodes.Status404NotFound, Title = "Not found", Detail = exception.Message },
-            RuleViolationException violation => Validation(violation),
+            RuleViolationException violation => ToValidationProblem(violation),
             AiProviderException => new ProblemDetails { Status = StatusCodes.Status502BadGateway, Title = "AI provider failure", Detail = exception.Message },
             _ => null,
         };
@@ -24,7 +24,7 @@ public class ApiExceptionHandler(IProblemDetailsService problemDetailsService, I
         return await problemDetailsService.TryWriteAsync(new ProblemDetailsContext { HttpContext = httpContext, ProblemDetails = problem, Exception = exception });
     }
 
-    private static ValidationProblemDetails Validation(RuleViolationException violation) => new(
+    private static ValidationProblemDetails ToValidationProblem(RuleViolationException violation) => new(
         new Dictionary<string, string[]> { [violation.Field] = [violation.Message] })
     {
         Status = StatusCodes.Status400BadRequest,

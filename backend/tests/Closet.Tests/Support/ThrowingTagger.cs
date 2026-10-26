@@ -6,6 +6,6 @@ namespace Closet.Tests.Support;
 
 public class ThrowingTagger : IItemTagger
 {
-    public Task<ItemTags> TagAsync(PhotoContent photo, CancellationToken cancellationToken) =>
+    public Task<ItemTags> TagPhotoAsync(PhotoContent photo, CancellationToken cancellationToken) =>
         throw new AiProviderException("tagger down");
 }

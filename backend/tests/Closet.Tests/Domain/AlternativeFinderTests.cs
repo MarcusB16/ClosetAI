@@ -14,7 +14,7 @@ public class AlternativeFinderTests
     };
 
     private static List<string> Ids(Slot slot, ClosetAPI.Domain.Context.StyleContext context) =>
-        AlternativeFinder.Find(Pieces, slot, Closet, context).Select(item => item.Id).ToList();
+        AlternativeFinder.FindAlternatives(Pieces, slot, Closet, context).Select(item => item.Id).ToList();
 
     [Fact]
     public void Excludes_the_current_piece()
@@ -26,7 +26,7 @@ public class AlternativeFinderTests
     [Fact]
     public void Only_returns_items_for_the_requested_slot()
     {
-        Assert.All(AlternativeFinder.Find(Pieces, Slot.Bottom, Closet, TestClosets.Dry), item => Assert.Equal(Slot.Bottom, item.Slot));
+        Assert.All(AlternativeFinder.FindAlternatives(Pieces, Slot.Bottom, Closet, TestClosets.Dry), item => Assert.Equal(Slot.Bottom, item.Slot));
     }
 
     [Fact]
@@ -43,7 +43,7 @@ public class AlternativeFinderTests
         var closet = Closet.Append(formal).ToList();
         var casualPieces = Pieces with { Top = "t-tee", Bottom = "b-jeans", Shoes = "s-sneaker", Outer = "o-casual" };
 
-        var ids = AlternativeFinder.Find(casualPieces, Slot.Shoes, closet, TestClosets.Dry).Select(item => item.Id);
+        var ids = AlternativeFinder.FindAlternatives(casualPieces, Slot.Shoes, closet, TestClosets.Dry).Select(item => item.Id);
 
         Assert.DoesNotContain("s-formal", ids);
     }

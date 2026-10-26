@@ -8,11 +8,11 @@ public record OutfitPieces
     public string Shoes { get; init; } = "";
     public List<string> Acc { get; init; } = [];
 
-    public IEnumerable<string> AllIds() =>
+    public IEnumerable<string> AllItemIds() =>
         new[] { Outer, Top, Bottom, Shoes }
             .Concat(Acc)
             .Where(id => !string.IsNullOrEmpty(id))
             .Select(id => id!);
 
-    public string Key() => string.Join('|', new[] { Outer ?? "", Top, Bottom, Shoes }.Concat(Acc.Order()));
+    public string ToCacheKey() => string.Join('|', new[] { Outer ?? "", Top, Bottom, Shoes }.Concat(Acc.Order()));
 }

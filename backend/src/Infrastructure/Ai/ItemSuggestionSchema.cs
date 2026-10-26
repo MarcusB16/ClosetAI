@@ -14,28 +14,28 @@ public static class ItemSuggestionSchema
         ["required"] = new JsonArray("name", "brand", "category", "slot", "type", "colorName", "color", "formality", "seasons", "fabric"),
         ["properties"] = new JsonObject
         {
-            ["name"] = Text(),
-            ["brand"] = Text(),
-            ["category"] = Choice(Enum.GetNames<Category>().Select(CamelCase)),
-            ["slot"] = Choice(Enum.GetNames<Slot>().Select(CamelCase)),
-            ["type"] = Choice(GarmentTypes.All),
-            ["colorName"] = Text(),
-            ["color"] = Text(),
+            ["name"] = TextProperty(),
+            ["brand"] = TextProperty(),
+            ["category"] = ChoiceProperty(Enum.GetNames<Category>().Select(CamelCase)),
+            ["slot"] = ChoiceProperty(Enum.GetNames<Slot>().Select(CamelCase)),
+            ["type"] = ChoiceProperty(GarmentTypes.All),
+            ["colorName"] = TextProperty(),
+            ["color"] = TextProperty(),
             ["formality"] = new JsonObject
             {
                 ["type"] = "integer",
                 ["enum"] = new JsonArray(Formality.Casual, Formality.Smart, Formality.Formal),
             },
-            ["seasons"] = new JsonObject { ["type"] = "array", ["items"] = Choice(SeasonNames) },
-            ["fabric"] = Text(),
+            ["seasons"] = new JsonObject { ["type"] = "array", ["items"] = ChoiceProperty(SeasonNames) },
+            ["fabric"] = TextProperty(),
         },
     };
 
     public static string CamelCase(string name) => char.ToLowerInvariant(name[0]) + name[1..];
 
-    private static JsonObject Text() => new() { ["type"] = "string" };
+    private static JsonObject TextProperty() => new() { ["type"] = "string" };
 
-    private static JsonObject Choice(IEnumerable<string> values) => new()
+    private static JsonObject ChoiceProperty(IEnumerable<string> values) => new()
     {
         ["type"] = "string",
         ["enum"] = new JsonArray(values.Select(value => (JsonNode)JsonValue.Create(value)!).ToArray()),

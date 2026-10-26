@@ -22,9 +22,9 @@ public class LocalMediaStoreTests : IDisposable
     [Fact]
     public async Task Saves_and_reads_back_a_photo()
     {
-        var name = await _store.SaveAsync(new PhotoContent(TestImages.Png, "image/png"), CancellationToken.None);
+        var name = await _store.SavePhotoAsync(new PhotoContent(TestImages.Png, "image/png"), CancellationToken.None);
 
-        var photo = await _store.ReadAsync(name, CancellationToken.None);
+        var photo = await _store.ReadPhotoAsync(name, CancellationToken.None);
 
         Assert.EndsWith(".png", name);
         Assert.Equal(TestImages.Png, photo!.Bytes);
@@ -34,8 +34,8 @@ public class LocalMediaStoreTests : IDisposable
     [Fact]
     public async Task Missing_files_and_path_traversal_return_null()
     {
-        Assert.Null(await _store.ReadAsync("missing.png", CancellationToken.None));
-        Assert.Null(await _store.ReadAsync("../secret.png", CancellationToken.None));
+        Assert.Null(await _store.ReadPhotoAsync("missing.png", CancellationToken.None));
+        Assert.Null(await _store.ReadPhotoAsync("../secret.png", CancellationToken.None));
     }
 
     [Fact]
@@ -43,7 +43,7 @@ public class LocalMediaStoreTests : IDisposable
     {
         await File.WriteAllTextAsync(Path.Combine(_folder, "note.txt"), "hello");
 
-        Assert.Null(await _store.ReadAsync("note.txt", CancellationToken.None));
+        Assert.Null(await _store.ReadPhotoAsync("note.txt", CancellationToken.None));
     }
 
     [Fact]

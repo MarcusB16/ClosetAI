@@ -13,7 +13,7 @@ namespace Closet.Tests.Infrastructure;
 public class AnthropicStructuredLlmTests
 {
     private static StructuredRequest Request(PhotoContent? image = null) =>
-        new("system", "user", OutfitSchema.For(TestClosets.Small()), image);
+        new("system", "user", OutfitSchema.ForCloset(TestClosets.Small()), image);
 
     private static AnthropicStructuredLlm Llm(string baseUrl) => new(
         new AnthropicClient { ApiKey = "sk-ant-test", BaseUrl = baseUrl, MaxRetries = 0 },
@@ -24,7 +24,7 @@ public class AnthropicStructuredLlmTests
     {
         var llm = Llm("http://127.0.0.1:1");
 
-        await Assert.ThrowsAsync<AiProviderException>(() => llm.CompleteAsync(Request(), CancellationToken.None));
+        await Assert.ThrowsAsync<AiProviderException>(() => llm.CompleteWithJsonSchemaAsync(Request(), CancellationToken.None));
     }
 
     [Theory]
@@ -36,7 +36,7 @@ public class AnthropicStructuredLlmTests
         using var server = StubServer.Respond(status, """{"type":"error","error":{"type":"api_error","message":"nope"}}""");
 
         await Assert.ThrowsAsync<AiProviderException>(() =>
-            Llm(server.Url).CompleteAsync(Request(new PhotoContent(TestImages.Png, "image/png")), CancellationToken.None));
+            Llm(server.Url).CompleteWithJsonSchemaAsync(Request(new PhotoContent(TestImages.Png, "image/png")), CancellationToken.None));
     }
 
     [Fact]
@@ -44,7 +44,7 @@ public class AnthropicStructuredLlmTests
     {
         using var server = StubServer.Respond(200, MessageJson("""{\"title\":\"Hi\"}"""));
 
-        var json = await Llm(server.Url).CompleteAsync(Request(new PhotoContent(TestImages.Jpeg, "image/jpeg")), CancellationToken.None);
+        var json = await Llm(server.Url).CompleteWithJsonSchemaAsync(Request(new PhotoContent(TestImages.Jpeg, "image/jpeg")), CancellationToken.None);
 
         Assert.Equal("Hi", json.GetProperty("title").GetString());
         Assert.Contains("\"type\":\"image\"", server.LastRequestBody);
@@ -58,7 +58,7 @@ public class AnthropicStructuredLlmTests
     {
         using var server = StubServer.Respond(200, MessageJson("not json"));
 
-        await Assert.ThrowsAsync<AiProviderException>(() => Llm(server.Url).CompleteAsync(Request(), CancellationToken.None));
+        await Assert.ThrowsAsync<AiProviderException>(() => Llm(server.Url).CompleteWithJsonSchemaAsync(Request(), CancellationToken.None));
     }
 
     [Fact]
@@ -66,7 +66,7 @@ public class AnthropicStructuredLlmTests
     {
         using var server = StubServer.Respond(200, MessageJson("", stopReason: "refusal"));
 
-        await Assert.ThrowsAsync<AiProviderException>(() => Llm(server.Url).CompleteAsync(Request(), CancellationToken.None));
+        await Assert.ThrowsAsync<AiProviderException>(() => Llm(server.Url).CompleteWithJsonSchemaAsync(Request(), CancellationToken.None));
     }
 
     private static string MessageJson(string text, string stopReason = "end_turn") =>

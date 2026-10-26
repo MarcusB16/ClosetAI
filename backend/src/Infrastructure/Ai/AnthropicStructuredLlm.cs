@@ -10,7 +10,7 @@ public class AnthropicStructuredLlm(AnthropicClient client, IOptions<AnthropicOp
 {
     private const int MaxTokens = 8000;
 
-    public async Task<JsonElement> CompleteAsync(StructuredRequest request, CancellationToken cancellationToken)
+    public async Task<JsonElement> CompleteWithJsonSchemaAsync(StructuredRequest request, CancellationToken cancellationToken)
     {
         try
         {

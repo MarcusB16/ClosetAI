@@ -4,5 +4,5 @@ namespace ClosetAPI.Domain.TryOns;
 
 public interface ITryOnRenderer
 {
-    Task<RenderedTryOn> RenderAsync(string personPhotoFile, IReadOnlyList<Item> pieces, CancellationToken cancellationToken);
+    Task<RenderedTryOn> RenderTryOnAsync(string personPhotoFile, IReadOnlyList<Item> pieces, CancellationToken cancellationToken);
 }

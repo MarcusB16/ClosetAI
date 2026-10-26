@@ -70,9 +70,9 @@ public class ItemsController(
     public async Task<ActionResult<ItemSuggestion>> Analyze([FromForm] PhotoUpload upload, CancellationToken cancellationToken)
     {
         var photo = await PhotoUploadReader.ReadAsync(upload.Photo, cancellationToken);
-        var photoFile = await mediaStore.SaveAsync(photo, cancellationToken);
+        var photoFile = await mediaStore.SavePhotoAsync(photo, cancellationToken);
         var cutoutFile = await backgroundRemover.RemoveBackgroundAsync(photoFile, cancellationToken);
-        var tags = await itemTagger.TagAsync(photo, cancellationToken);
+        var tags = await itemTagger.TagPhotoAsync(photo, cancellationToken);
 
         return new ItemSuggestion
         {

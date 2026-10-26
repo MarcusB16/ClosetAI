@@ -7,7 +7,7 @@ namespace ClosetAPI.Infrastructure.Ai;
 
 public static class OutfitResponseReader
 {
-    public static StyledOutfit Read(JsonElement json, IReadOnlyList<Item> closet, string? requiredItemId)
+    public static StyledOutfit ReadOutfit(JsonElement json, IReadOnlyList<Item> closet, string? requiredItemId)
     {
         var pieces = new OutfitPieces
         {
@@ -18,7 +18,7 @@ public static class OutfitResponseReader
             Acc = ReadAccessories(json, closet),
         };
 
-        if (requiredItemId is not null && !pieces.AllIds().Contains(requiredItemId))
+        if (requiredItemId is not null && !pieces.AllItemIds().Contains(requiredItemId))
             throw new AiProviderException("The AI response ignored the locked item.");
 
         return new StyledOutfit(json.RequiredString("title"), json.RequiredString("note"), pieces);

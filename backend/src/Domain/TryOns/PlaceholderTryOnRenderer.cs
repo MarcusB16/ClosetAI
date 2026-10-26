@@ -4,6 +4,6 @@ namespace ClosetAPI.Domain.TryOns;
 
 public class PlaceholderTryOnRenderer : ITryOnRenderer
 {
-    public Task<RenderedTryOn> RenderAsync(string personPhotoFile, IReadOnlyList<Item> pieces, CancellationToken cancellationToken) =>
+    public Task<RenderedTryOn> RenderTryOnAsync(string personPhotoFile, IReadOnlyList<Item> pieces, CancellationToken cancellationToken) =>
         Task.FromResult(new RenderedTryOn(personPhotoFile, Placeholder: true));
 }

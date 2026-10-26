@@ -18,7 +18,7 @@ public class SlotInstructionParserTests
     [InlineData("a different belt", Slot.Acc)]
     public void Maps_instructions_to_slots(string instruction, Slot expected)
     {
-        Assert.Equal(expected, SlotInstructionParser.Parse(instruction));
+        Assert.Equal(expected, SlotInstructionParser.ParseSlot(instruction));
     }
 
     [Theory]
@@ -26,12 +26,12 @@ public class SlotInstructionParserTests
     [InlineData("")]
     public void Returns_null_when_no_slot_is_mentioned(string instruction)
     {
-        Assert.Null(SlotInstructionParser.Parse(instruction));
+        Assert.Null(SlotInstructionParser.ParseSlot(instruction));
     }
 
     [Fact]
     public void Is_case_insensitive()
     {
-        Assert.Equal(Slot.Shoes, SlotInstructionParser.Parse("DIFFERENT SHOES"));
+        Assert.Equal(Slot.Shoes, SlotInstructionParser.ParseSlot("DIFFERENT SHOES"));
     }
 }

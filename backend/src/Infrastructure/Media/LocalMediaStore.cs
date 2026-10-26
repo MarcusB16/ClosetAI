@@ -15,14 +15,14 @@ public class LocalMediaStore : IMediaStore
 
     public string Folder => _folder;
 
-    public async Task<string> SaveAsync(PhotoContent photo, CancellationToken cancellationToken)
+    public async Task<string> SavePhotoAsync(PhotoContent photo, CancellationToken cancellationToken)
     {
         var fileName = $"{Guid.NewGuid():N}{PhotoValidator.ExtensionFor(photo.ContentType)}";
         await File.WriteAllBytesAsync(Path.Combine(_folder, fileName), photo.Bytes, cancellationToken);
         return fileName;
     }
 
-    public async Task<PhotoContent?> ReadAsync(string fileName, CancellationToken cancellationToken)
+    public async Task<PhotoContent?> ReadPhotoAsync(string fileName, CancellationToken cancellationToken)
     {
         if (fileName != Path.GetFileName(fileName)) return null;
 

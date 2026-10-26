@@ -7,7 +7,7 @@ public static class OutfitSchema
 {
     public const string NoOuterValue = "none";
 
-    public static JsonObject For(IReadOnlyList<Item> closet) => new()
+    public static JsonObject ForCloset(IReadOnlyList<Item> closet) => new()
     {
         ["type"] = "object",
         ["additionalProperties"] = false,

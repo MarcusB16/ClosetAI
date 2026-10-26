@@ -7,7 +7,7 @@ public class ScriptedStructuredLlm(string json) : IStructuredLlm
 {
     public StructuredRequest? LastRequest { get; private set; }
 
-    public Task<JsonElement> CompleteAsync(StructuredRequest request, CancellationToken cancellationToken)
+    public Task<JsonElement> CompleteWithJsonSchemaAsync(StructuredRequest request, CancellationToken cancellationToken)
     {
         LastRequest = request;
         return Task.FromResult(JsonDocument.Parse(json).RootElement.Clone());

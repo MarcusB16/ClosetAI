@@ -7,10 +7,10 @@ public static class AlternativeFinder
 {
     private const double MaxFormalityDistance = 1.3;
 
-    public static List<Item> Find(OutfitPieces pieces, Slot slot, IReadOnlyList<Item> closet, StyleContext context)
+    public static List<Item> FindAlternatives(OutfitPieces pieces, Slot slot, IReadOnlyList<Item> closet, StyleContext context)
     {
-        var target = OutfitFormality.Average(pieces, closet);
-        var currentId = CurrentIdFor(pieces, slot, closet);
+        var target = OutfitFormality.CalculateAverage(pieces, closet);
+        var currentId = CurrentItemIdInSlot(pieces, slot, closet);
         return closet
             .Where(item => item.Slot == slot
                 && item.Id != currentId
@@ -20,7 +20,7 @@ public static class AlternativeFinder
             .ToList();
     }
 
-    private static string? CurrentIdFor(OutfitPieces pieces, Slot slot, IReadOnlyList<Item> closet) => slot switch
+    private static string? CurrentItemIdInSlot(OutfitPieces pieces, Slot slot, IReadOnlyList<Item> closet) => slot switch
     {
         Slot.Outer => pieces.Outer,
         Slot.Top => pieces.Top,

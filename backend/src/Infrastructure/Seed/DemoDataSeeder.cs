@@ -49,7 +49,7 @@ public class DemoDataSeeder(ClosetDbContext db, TimeProvider clock)
         foreach (var wear in wears)
             WearRecorder.MarkLastWorn(wear.Date, outfits.First(outfit => outfit.Id == wear.OutfitId), items);
 
-        var todaysOutfit = TodaysOutfit(file.TodayIds, items, today, now);
+        var todaysOutfit = BuildTodaysOutfit(file.TodayIds, items, today, now);
         outfits.Add(todaysOutfit);
 
         db.Items.AddRange(items);
@@ -95,7 +95,7 @@ public class DemoDataSeeder(ClosetDbContext db, TimeProvider clock)
     {
         Id = seed.Id,
         Title = seed.Title,
-        Pieces = PiecesBuilder.FromIds(seed.Ids, items),
+        Pieces = PiecesBuilder.BuildFromItemIds(seed.Ids, items),
         Saved = seed.Saved,
         CreatedAt = now.AddSeconds(index - count),
     };
@@ -106,12 +106,12 @@ public class DemoDataSeeder(ClosetDbContext db, TimeProvider clock)
             .Select(outfit => new WearEntry { Date = today.AddDays(-outfit.WornDaysAgo!.Value), OutfitId = outfit.Id })
             .ToList();
 
-    private static Outfit TodaysOutfit(List<string> ids, List<Item> items, DateOnly today, DateTimeOffset now) => new()
+    private static Outfit BuildTodaysOutfit(List<string> ids, List<Item> items, DateOnly today, DateTimeOffset now) => new()
     {
         Id = EntityId.New(),
         Title = $"{today.DayOfWeek}{TodayTitleSuffix}",
         Note = TodayNote,
-        Pieces = PiecesBuilder.FromIds(ids, items),
+        Pieces = PiecesBuilder.BuildFromItemIds(ids, items),
         CreatedAt = now,
     };
 }

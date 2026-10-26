@@ -5,9 +5,9 @@ namespace Closet.Tests.Support;
 
 public class ThrowingStylist : IOutfitStylist
 {
-    public Task<StyledOutfit> StyleAsync(StyleBrief brief, CancellationToken cancellationToken) =>
+    public Task<StyledOutfit> StyleOutfitAsync(StyleBrief brief, CancellationToken cancellationToken) =>
         throw new AiProviderException("boom");
 
-    public Task<StyledOutfit> RefineAsync(RefineBrief brief, CancellationToken cancellationToken) =>
+    public Task<StyledOutfit> RefineOutfitAsync(RefineBrief brief, CancellationToken cancellationToken) =>
         throw new AiProviderException("boom");
 }

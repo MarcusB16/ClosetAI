@@ -9,7 +9,7 @@ public class WearLoggingTests
 {
     private readonly List<Item> _closet = TestClosets.Small();
 
-    private Outfit Outfit(params string[] ids) => new() { Id = "o", Pieces = PiecesBuilder.FromIds(ids, _closet) };
+    private Outfit Outfit(params string[] ids) => new() { Id = "o", Pieces = PiecesBuilder.BuildFromItemIds(ids, _closet) };
 
     private Item Item(string id) => _closet.Single(item => item.Id == id);
 
@@ -18,7 +18,7 @@ public class WearLoggingTests
     {
         var outfit = Outfit("t-tee", "b-jeans", "s-sneaker", "a-watch");
 
-        WearRecorder.Apply(TestClosets.Today, outfit, replacedOutfit: null, _closet);
+        WearRecorder.RecordWear(TestClosets.Today, outfit, replacedOutfit: null, _closet);
 
         foreach (var id in new[] { "t-tee", "b-jeans", "s-sneaker", "a-watch" })
         {
@@ -34,9 +34,9 @@ public class WearLoggingTests
     {
         var first = Outfit("t-tee", "b-jeans", "s-sneaker");
         var second = Outfit("t-oxford", "b-jeans", "s-loafer");
-        WearRecorder.Apply(TestClosets.Today, first, null, _closet);
+        WearRecorder.RecordWear(TestClosets.Today, first, null, _closet);
 
-        WearRecorder.Apply(TestClosets.Today, second, first, _closet);
+        WearRecorder.RecordWear(TestClosets.Today, second, first, _closet);
 
         Assert.Equal(0, Item("t-tee").TimesWorn);
         Assert.Equal(0, Item("s-sneaker").TimesWorn);
@@ -49,7 +49,7 @@ public class WearLoggingTests
     {
         var replaced = Outfit("t-tee", "b-jeans", "s-sneaker");
 
-        WearRecorder.Apply(TestClosets.Today, Outfit("t-oxford", "b-chino", "s-loafer"), replaced, _closet);
+        WearRecorder.RecordWear(TestClosets.Today, Outfit("t-oxford", "b-chino", "s-loafer"), replaced, _closet);
 
         Assert.Equal(0, Item("t-tee").TimesWorn);
     }
@@ -59,7 +59,7 @@ public class WearLoggingTests
     {
         var outfit = new Outfit { Pieces = new OutfitPieces { Top = "ghost", Bottom = "b-jeans", Shoes = "s-sneaker" } };
 
-        WearRecorder.Apply(TestClosets.Today, outfit, null, _closet);
+        WearRecorder.RecordWear(TestClosets.Today, outfit, null, _closet);
 
         Assert.Equal(1, Item("b-jeans").TimesWorn);
     }

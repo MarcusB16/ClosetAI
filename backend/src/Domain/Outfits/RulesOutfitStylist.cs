@@ -10,11 +10,11 @@ public partial class RulesOutfitStylist : IOutfitStylist
     private const int RecentWearDays = 7;
     private const double FormalOnlyAbove = 2.8;
 
-    public Task<StyledOutfit> StyleAsync(StyleBrief brief, CancellationToken cancellationToken) =>
-        Task.FromResult(Style(brief));
+    public Task<StyledOutfit> StyleOutfitAsync(StyleBrief brief, CancellationToken cancellationToken) =>
+        Task.FromResult(StyleByRules(brief));
 
-    public Task<StyledOutfit> RefineAsync(RefineBrief brief, CancellationToken cancellationToken) =>
-        Task.FromResult(Refine(brief));
+    public Task<StyledOutfit> RefineOutfitAsync(RefineBrief brief, CancellationToken cancellationToken) =>
+        Task.FromResult(RefineByRules(brief));
 
     public static Item? FindMentionedItem(string text, IReadOnlyList<Item> closet)
     {
@@ -24,30 +24,30 @@ public partial class RulesOutfitStylist : IOutfitStylist
             || (item.Keywords ?? []).Any(keyword => lowered.Contains(keyword)));
     }
 
-    private static StyledOutfit Refine(RefineBrief brief)
+    private static StyledOutfit RefineByRules(RefineBrief brief)
     {
-        var slot = SlotInstructionParser.Parse(brief.Instruction);
+        var slot = SlotInstructionParser.ParseSlot(brief.Instruction);
         if (slot is null) return StyleWithInstruction(brief);
 
-        var alternatives = AlternativeFinder.Find(brief.Current.Pieces, slot.Value, brief.Closet, brief.Context);
-        if (alternatives.Count == 0) return Unchanged(brief);
+        var alternatives = AlternativeFinder.FindAlternatives(brief.Current.Pieces, slot.Value, brief.Closet, brief.Context);
+        if (alternatives.Count == 0) return KeepOutfitUnchanged(brief);
 
         var random = new SeededRandom(brief.Variation * 7919);
         var chosen = alternatives[random.NextIndex(alternatives.Count)];
-        var pieces = PieceReplacer.Replace(brief.Current.Pieces, slot.Value, chosen, brief.Closet);
+        var pieces = PieceReplacer.ReplacePiece(brief.Current.Pieces, slot.Value, chosen, brief.Closet);
         return new StyledOutfit(brief.Current.Title, brief.Current.Note ?? "", pieces);
     }
 
-    private static StyledOutfit Unchanged(RefineBrief brief) =>
+    private static StyledOutfit KeepOutfitUnchanged(RefineBrief brief) =>
         new(brief.Current.Title, brief.Current.Note ?? "", brief.Current.Pieces);
 
     private static StyledOutfit StyleWithInstruction(RefineBrief brief)
     {
         var prompt = string.Join(' ', new[] { brief.Current.Prompt, brief.Instruction }.Where(part => !string.IsNullOrEmpty(part)));
-        return Style(new StyleBrief(prompt, null, false, brief.Closet, brief.Context, brief.Variation));
+        return StyleByRules(new StyleBrief(prompt, null, false, brief.Closet, brief.Context, brief.Variation));
     }
 
-    private static StyledOutfit Style(StyleBrief brief)
+    private static StyledOutfit StyleByRules(StyleBrief brief)
     {
         var text = brief.Prompt.ToLowerInvariant();
         var random = new SeededRandom(brief.Variation * 7919);
@@ -61,7 +61,7 @@ public partial class RulesOutfitStylist : IOutfitStylist
         var avoidRecent = brief.AvoidRecent || AvoidRecentPattern().IsMatch(text);
 
         bool IsAllowed(Item item) =>
-            !(avoidRecent && item.Id != locked?.Id && !item.IsWatch && WornRecently(item, brief.Context.Date))
+            !(avoidRecent && item.Id != locked?.Id && !item.IsWatch && WasWornRecently(item, brief.Context.Date))
             && !(brief.Context.Rain && item.NoRain == true)
             && !(item.Category == Category.Formal && target < FormalOnlyAbove);
 
@@ -74,7 +74,7 @@ public partial class RulesOutfitStylist : IOutfitStylist
             if (candidates.Count == 0) candidates = inSlot;
             if (candidates.Count == 0) return null;
 
-            var weights = candidates.Select(item => Weight(item, slot, target, brief.Context)).ToList();
+            var weights = candidates.Select(item => ScoreCandidate(item, slot, target, brief.Context)).ToList();
             var roll = random.NextDouble() * weights.Sum();
             for (var index = 0; index < candidates.Count; index++)
             {
@@ -85,9 +85,9 @@ public partial class RulesOutfitStylist : IOutfitStylist
         }
 
         var outer = Pick(Slot.Outer);
-        var top = Pick(Slot.Top) ?? throw MissingSlot(Slot.Top);
-        var bottom = Pick(Slot.Bottom) ?? throw MissingSlot(Slot.Bottom);
-        var shoes = Pick(Slot.Shoes) ?? throw MissingSlot(Slot.Shoes);
+        var top = Pick(Slot.Top) ?? throw MissingSlotError(Slot.Top);
+        var bottom = Pick(Slot.Bottom) ?? throw MissingSlotError(Slot.Bottom);
+        var shoes = Pick(Slot.Shoes) ?? throw MissingSlotError(Slot.Shoes);
 
         var accessories = new List<string>();
         var watch = closet.FirstOrDefault(item => item.IsWatch);
@@ -102,10 +102,10 @@ public partial class RulesOutfitStylist : IOutfitStylist
         }
 
         var pieces = new OutfitPieces { Outer = outer?.Id, Top = top.Id, Bottom = bottom.Id, Shoes = shoes.Id, Acc = accessories };
-        return new StyledOutfit(Title(locked, level.Mood, avoidRecent, brief.Context), Note(locked, level.Mood, avoidRecent, outer, brief.Context), pieces);
+        return new StyledOutfit(BuildTitle(locked, level.Mood, avoidRecent, brief.Context), BuildNote(locked, level.Mood, avoidRecent, outer, brief.Context), pieces);
     }
 
-    private static double Weight(Item item, Slot slot, double target, StyleContext context)
+    private static double ScoreCandidate(Item item, Slot slot, double target, StyleContext context)
     {
         var closeness = 1 / (0.3 + Math.Abs(item.Formality - target));
         var formalBoost = target >= FormalOnlyAbove && item.Category == Category.Formal ? 5 : 1;
@@ -113,7 +113,7 @@ public partial class RulesOutfitStylist : IOutfitStylist
         return closeness * formalBoost * rainBoost;
     }
 
-    private static bool WornRecently(Item item, DateOnly today) =>
+    private static bool WasWornRecently(Item item, DateOnly today) =>
         item.LastWorn is { } lastWorn && today.DayNumber - lastWorn.DayNumber <= RecentWearDays;
 
     private static string[] AccessoryTypesFor(double target) => target switch
@@ -124,15 +124,15 @@ public partial class RulesOutfitStylist : IOutfitStylist
         _ => ["beanie", "tote", "scarf", "belt"],
     };
 
-    private static RuleViolationException MissingSlot(Slot slot) =>
+    private static RuleViolationException MissingSlotError(Slot slot) =>
         new("closet", $"The closet has no items for the '{slot}' slot.");
 
-    private static string Lower(Item item) => char.ToLowerInvariant(item.Name[0]) + item.Name[1..];
+    private static string LowercaseName(Item item) => char.ToLowerInvariant(item.Name[0]) + item.Name[1..];
 
-    private static string Title(Item? locked, Mood mood, bool avoidRecent, StyleContext context)
+    private static string BuildTitle(Item? locked, Mood mood, bool avoidRecent, StyleContext context)
     {
         if (locked is not null)
-            return $"Around the {LeadingColorPattern().Replace(Lower(locked), "")}";
+            return $"Around the {LeadingColorPattern().Replace(LowercaseName(locked), "")}";
 
         return mood switch
         {
@@ -145,9 +145,9 @@ public partial class RulesOutfitStylist : IOutfitStylist
         };
     }
 
-    private static string Note(Item? locked, Mood mood, bool avoidRecent, Item? outer, StyleContext context)
+    private static string BuildNote(Item? locked, Mood mood, bool avoidRecent, Item? outer, StyleContext context)
     {
-        var lead = locked is not null ? $"Built around your {Lower(locked)}."
+        var lead = locked is not null ? $"Built around your {LowercaseName(locked)}."
             : avoidRecent ? "Nothing here was worn in the last week."
             : mood switch
             {
@@ -160,8 +160,8 @@ public partial class RulesOutfitStylist : IOutfitStylist
             };
 
         var weather = outer is null ? ""
-            : context.Rain && outer.RainOk == true ? $"{context.Forecast}, so the {Lower(outer)} goes on top."
-            : $"It's {context.TempF}° today, so bring the {Lower(outer)}.";
+            : context.Rain && outer.RainOk == true ? $"{context.Forecast}, so the {LowercaseName(outer)} goes on top."
+            : $"It's {context.TempF}° today, so bring the {LowercaseName(outer)}.";
 
         return string.Join(' ', new[] { lead, weather }.Where(part => part.Length > 0));
     }

@@ -5,6 +5,6 @@ namespace Closet.Tests.Support;
 
 public class ThrowingRenderer : ITryOnRenderer
 {
-    public Task<RenderedTryOn> RenderAsync(string personPhotoFile, IReadOnlyList<Item> pieces, CancellationToken cancellationToken) =>
+    public Task<RenderedTryOn> RenderTryOnAsync(string personPhotoFile, IReadOnlyList<Item> pieces, CancellationToken cancellationToken) =>
         throw new InvalidOperationException("image model down");
 }

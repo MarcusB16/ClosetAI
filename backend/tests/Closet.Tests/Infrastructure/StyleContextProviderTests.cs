@@ -10,7 +10,7 @@ public class StyleContextProviderTests
     {
         var clock = new FakeTimeProvider(new DateTimeOffset(2026, 10, 27, 9, 0, 0, TimeSpan.Zero));
 
-        var context = new SeededStyleContextProvider(clock).Current();
+        var context = new SeededStyleContextProvider(clock).GetCurrentStyleContext();
 
         Assert.Equal(new DateOnly(2026, 10, 27), context.Date);
         Assert.Equal("Tuesday", context.Weekday);

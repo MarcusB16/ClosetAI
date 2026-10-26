@@ -4,5 +4,5 @@ namespace ClosetAPI.Infrastructure.Ai;
 
 public interface IStructuredLlm
 {
-    Task<JsonElement> CompleteAsync(StructuredRequest request, CancellationToken cancellationToken);
+    Task<JsonElement> CompleteWithJsonSchemaAsync(StructuredRequest request, CancellationToken cancellationToken);
 }

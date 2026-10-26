@@ -10,7 +10,7 @@ public class StubTests
     [Fact]
     public async Task Fake_tagger_returns_a_valid_suggestion()
     {
-        var tags = await new FakeItemTagger().TagAsync(new PhotoContent(TestImages.Png, "image/png"), CancellationToken.None);
+        var tags = await new FakeItemTagger().TagPhotoAsync(new PhotoContent(TestImages.Png, "image/png"), CancellationToken.None);
 
         Assert.True(GarmentTypes.IsKnown(tags.Type));
         Assert.True(Formality.IsValid(tags.Formality));
@@ -26,7 +26,7 @@ public class StubTests
     [Fact]
     public async Task Placeholder_renderer_returns_the_person_photo_flagged_as_placeholder()
     {
-        var rendered = await new PlaceholderTryOnRenderer().RenderAsync("me.png", [], CancellationToken.None);
+        var rendered = await new PlaceholderTryOnRenderer().RenderTryOnAsync("me.png", [], CancellationToken.None);
 
         Assert.Equal("me.png", rendered.ImageFile);
         Assert.True(rendered.Placeholder);

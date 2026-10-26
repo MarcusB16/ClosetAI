@@ -55,7 +55,7 @@ public class ProfileController(
     {
         var photo = await PhotoUploadReader.ReadAsync(upload.Photo, cancellationToken);
         var state = await userStates.GetOrCreateAsync(cancellationToken);
-        state.PersonPhotoFile = await mediaStore.SaveAsync(photo, cancellationToken);
+        state.PersonPhotoFile = await mediaStore.SavePhotoAsync(photo, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
         return ToProfile(state);
     }

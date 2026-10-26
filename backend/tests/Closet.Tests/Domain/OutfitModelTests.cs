@@ -11,7 +11,7 @@ public class OutfitModelTests
     [Fact]
     public void PiecesBuilder_assigns_ids_to_their_slots()
     {
-        var pieces = PiecesBuilder.FromIds(["a-belt", "s-loafer", "o-smart", "t-tee", "b-jeans", "a-watch"], _closet);
+        var pieces = PiecesBuilder.BuildFromItemIds(["a-belt", "s-loafer", "o-smart", "t-tee", "b-jeans", "a-watch"], _closet);
 
         Assert.Equal("o-smart", pieces.Outer);
         Assert.Equal("t-tee", pieces.Top);
@@ -23,7 +23,7 @@ public class OutfitModelTests
     [Fact]
     public void PiecesBuilder_rejects_unknown_ids()
     {
-        Assert.Throws<EntityNotFoundException>(() => PiecesBuilder.FromIds(["ghost"], _closet));
+        Assert.Throws<EntityNotFoundException>(() => PiecesBuilder.BuildFromItemIds(["ghost"], _closet));
     }
 
     [Fact]
@@ -31,7 +31,7 @@ public class OutfitModelTests
     {
         var pieces = new OutfitPieces { Top = "t", Bottom = "b", Shoes = "s", Acc = ["a"] };
 
-        Assert.Equal(["t", "b", "s", "a"], pieces.AllIds());
+        Assert.Equal(["t", "b", "s", "a"], pieces.AllItemIds());
     }
 
     [Fact]
@@ -40,8 +40,8 @@ public class OutfitModelTests
         var first = new OutfitPieces { Top = "t", Bottom = "b", Shoes = "s", Acc = ["a1", "a2"] };
         var second = first with { Acc = ["a2", "a1"] };
 
-        Assert.Equal(first.Key(), second.Key());
-        Assert.NotEqual(first.Key(), (first with { Top = "t2" }).Key());
+        Assert.Equal(first.ToCacheKey(), second.ToCacheKey());
+        Assert.NotEqual(first.ToCacheKey(), (first with { Top = "t2" }).ToCacheKey());
     }
 
     [Fact]
@@ -49,14 +49,14 @@ public class OutfitModelTests
     {
         var pieces = new OutfitPieces { Outer = "o-smart", Top = "t-tee", Bottom = "b-jeans", Shoes = "s-loafer" };
 
-        Assert.Equal((2 + 1 + 1 + 2) / 4.0, OutfitFormality.Average(pieces, _closet));
+        Assert.Equal((2 + 1 + 1 + 2) / 4.0, OutfitFormality.CalculateAverage(pieces, _closet));
     }
 
     [Fact]
     public void Average_formality_defaults_to_smart_for_unknown_items()
     {
-        Assert.Equal(2, OutfitFormality.Average(new OutfitPieces { Top = "x", Bottom = "y", Shoes = "z" }, _closet));
-        Assert.Equal(2, OutfitFormality.Average(new OutfitPieces { Top = "", Bottom = "", Shoes = "" }, _closet));
+        Assert.Equal(2, OutfitFormality.CalculateAverage(new OutfitPieces { Top = "x", Bottom = "y", Shoes = "z" }, _closet));
+        Assert.Equal(2, OutfitFormality.CalculateAverage(new OutfitPieces { Top = "", Bottom = "", Shoes = "" }, _closet));
     }
 
     [Fact]

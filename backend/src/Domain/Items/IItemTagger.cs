@@ -4,5 +4,5 @@ namespace ClosetAPI.Domain.Items;
 
 public interface IItemTagger
 {
-    Task<ItemTags> TagAsync(PhotoContent photo, CancellationToken cancellationToken);
+    Task<ItemTags> TagPhotoAsync(PhotoContent photo, CancellationToken cancellationToken);
 }

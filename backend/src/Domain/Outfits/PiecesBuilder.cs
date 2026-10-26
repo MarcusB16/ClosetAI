@@ -5,7 +5,7 @@ namespace ClosetAPI.Domain.Outfits;
 
 public static class PiecesBuilder
 {
-    public static OutfitPieces FromIds(IEnumerable<string> ids, IReadOnlyList<Item> closet)
+    public static OutfitPieces BuildFromItemIds(IEnumerable<string> ids, IReadOnlyList<Item> closet)
     {
         string? outer = null;
         string top = "", bottom = "", shoes = "";

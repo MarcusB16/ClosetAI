@@ -4,7 +4,7 @@ namespace ClosetAPI.Domain.Items;
 
 public class FakeItemTagger : IItemTagger
 {
-    public Task<ItemTags> TagAsync(PhotoContent photo, CancellationToken cancellationToken)
+    public Task<ItemTags> TagPhotoAsync(PhotoContent photo, CancellationToken cancellationToken)
     {
         var suggestion = new ItemTags(
             Name: "New item",

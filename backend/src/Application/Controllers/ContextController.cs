@@ -18,7 +18,7 @@ public class ContextController(IStyleContextProvider contextProvider) : Controll
     [ResponseExample<StyleContextExample>(StatusCodes.Status200OK)]
     public ActionResult<StyleContextResponse> Get()
     {
-        var context = contextProvider.Current();
+        var context = contextProvider.GetCurrentStyleContext();
         return new StyleContextResponse
         {
             Date = context.Date,

@@ -5,7 +5,7 @@ namespace ClosetAPI.Domain.Outfits;
 
 public static class PieceReplacer
 {
-    public static OutfitPieces Replace(OutfitPieces pieces, Slot slot, Item replacement, IReadOnlyList<Item> closet)
+    public static OutfitPieces ReplacePiece(OutfitPieces pieces, Slot slot, Item replacement, IReadOnlyList<Item> closet)
     {
         if (replacement.Slot != slot)
             throw new RuleViolationException("itemId", $"Item '{replacement.Id}' belongs to slot '{replacement.Slot}', not '{slot}'.");

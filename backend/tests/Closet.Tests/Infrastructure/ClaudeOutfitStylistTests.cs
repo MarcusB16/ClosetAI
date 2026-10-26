@@ -20,7 +20,7 @@ public class ClaudeOutfitStylistTests
     {
         var llm = new ScriptedStructuredLlm(ValidJson);
 
-        var outfit = await new ClaudeOutfitStylist(llm).StyleAsync(Brief(), CancellationToken.None);
+        var outfit = await new ClaudeOutfitStylist(llm).StyleOutfitAsync(Brief(), CancellationToken.None);
 
         Assert.Equal("Smart casual", outfit.Title);
         Assert.Equal("o-smart", outfit.Pieces.Outer);
@@ -32,7 +32,7 @@ public class ClaudeOutfitStylistTests
     {
         var llm = new ScriptedStructuredLlm(ValidJson);
 
-        await new ClaudeOutfitStylist(llm).StyleAsync(Brief("s-loafer"), CancellationToken.None);
+        await new ClaudeOutfitStylist(llm).StyleOutfitAsync(Brief("s-loafer"), CancellationToken.None);
 
         var schema = llm.LastRequest!.Schema.ToJsonString();
         using var document = JsonDocument.Parse(schema);
@@ -53,7 +53,7 @@ public class ClaudeOutfitStylistTests
     {
         var stylist = new ClaudeOutfitStylist(new ScriptedStructuredLlm(json));
 
-        await Assert.ThrowsAsync<AiProviderException>(() => stylist.StyleAsync(Brief(), CancellationToken.None));
+        await Assert.ThrowsAsync<AiProviderException>(() => stylist.StyleOutfitAsync(Brief(), CancellationToken.None));
     }
 
     [Fact]
@@ -61,7 +61,7 @@ public class ClaudeOutfitStylistTests
     {
         var stylist = new ClaudeOutfitStylist(new ScriptedStructuredLlm(ValidJson));
 
-        await Assert.ThrowsAsync<AiProviderException>(() => stylist.StyleAsync(Brief("s-sneaker"), CancellationToken.None));
+        await Assert.ThrowsAsync<AiProviderException>(() => stylist.StyleOutfitAsync(Brief("s-sneaker"), CancellationToken.None));
     }
 
     [Fact]
@@ -70,7 +70,7 @@ public class ClaudeOutfitStylistTests
         var llm = new ScriptedStructuredLlm(ValidJson);
         var current = new Outfit { Title = "Old", Pieces = new OutfitPieces { Top = "t-tee", Bottom = "b-jeans", Shoes = "s-sneaker" } };
 
-        var outfit = await new ClaudeOutfitStylist(llm).RefineAsync(
+        var outfit = await new ClaudeOutfitStylist(llm).RefineOutfitAsync(
             new RefineBrief(current, "dress it up", TestClosets.Small(), TestClosets.Dry, 1), CancellationToken.None);
 
         Assert.Equal("Smart casual", outfit.Title);
@@ -85,7 +85,7 @@ public class ClaudeOutfitStylistTests
         var stylist = new ClaudeOutfitStylist(new ScriptedStructuredLlm(ValidJson));
 
         await Assert.ThrowsAsync<RuleViolationException>(() =>
-            stylist.StyleAsync(new StyleBrief("x", null, false, closet, TestClosets.Dry, 1), CancellationToken.None));
+            stylist.StyleOutfitAsync(new StyleBrief("x", null, false, closet, TestClosets.Dry, 1), CancellationToken.None));
     }
 
     [Fact]
@@ -93,7 +93,7 @@ public class ClaudeOutfitStylistTests
     {
         var closet = TestClosets.Small().Where(item => item.Slot != ClosetAPI.Domain.Items.Slot.Acc).ToList();
 
-        var accItems = OutfitSchema.For(closet)["properties"]!["acc"]!["items"]!["enum"]!.AsArray();
+        var accItems = OutfitSchema.ForCloset(closet)["properties"]!["acc"]!["items"]!["enum"]!.AsArray();
 
         Assert.Equal(["none"], accItems.Select(node => node!.GetValue<string>()));
     }
