@@ -5,7 +5,7 @@ import { AccessibilityInfo, Animated, Image, StyleSheet, View } from 'react-nati
 import { useItemMap, useOutfit, useProfile, useTryOn } from '@/api/hooks';
 import { MiniBoard, resolvePieces } from '@/components/Board';
 import { Icon } from '@/components/Icon';
-import { Btn, IconBtn, Loading, Screen, T } from '@/components/ui';
+import { Btn, ErrorScreen, IconBtn, Loading, Screen, T } from '@/components/ui';
 import type { Item } from '@/domain/types';
 import { useTheme } from '@/theme';
 
@@ -13,11 +13,14 @@ import { useTheme } from '@/theme';
 export default function TryOn() {
   const t = useTheme();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { data: outfit } = useOutfit(id);
-  const { data: profile } = useProfile();
+  const { data: outfit, isError: outfitFailed, refetch: refetchOutfit } = useOutfit(id);
+  const { data: profile, isError: profileFailed, refetch: refetchProfile } = useProfile();
   const itemMap = useItemMap();
   const tryOn = useTryOn(outfit);
 
+  if (outfitFailed || profileFailed) {
+    return <ErrorScreen message="Couldn't load this outfit." onRetry={() => { refetchOutfit(); refetchProfile(); }} />;
+  }
   if (!outfit || !profile) return <Loading />;
   const pieces = resolvePieces(outfit, itemMap);
   const names = [pieces.outer, pieces.top, pieces.bottom, pieces.shoes].filter(Boolean) as Item[];

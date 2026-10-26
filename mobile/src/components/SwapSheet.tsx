@@ -5,14 +5,14 @@ import { useAlternatives } from '@/api/hooks';
 import { SLOT_LABEL, type Item, type Slot } from '@/domain/types';
 import { useTheme } from '@/theme';
 import { ItemTile } from './ItemTile';
-import { Btn, HScroll, SectionHead, T } from './ui';
+import { Btn, ErrorState, HScroll, SectionHead, T } from './ui';
 
 export function SwapSheet({ outfitId, slot, current, onPick, onClose }: {
   outfitId: string; slot: Slot | null; current?: Item; onPick: (item: Item) => void; onClose: () => void;
 }) {
   const t = useTheme();
   const insets = useSafeAreaInsets();
-  const { data: alts, isLoading } = useAlternatives(outfitId, slot);
+  const { data: alts, isLoading, isError, refetch } = useAlternatives(outfitId, slot);
   const label = slot ? SLOT_LABEL[slot].toLowerCase() : '';
 
   return (
@@ -21,7 +21,7 @@ export function SwapSheet({ outfitId, slot, current, onPick, onClose }: {
       <View style={[styles.sheet, { backgroundColor: t.paper, paddingBottom: insets.bottom + 18 }]}>
         <View style={[styles.grab, { backgroundColor: t.line }]} />
         <SectionHead title={`Swap the ${label}`} right={alts && <T variant="label">{alts.length} that work</T>} />
-        {isLoading ? <T tone="muted">Finding options…</T> : (
+        {isError ? <ErrorState message="Couldn't load options." onRetry={() => refetch()} /> : isLoading ? <T tone="muted">Finding options…</T> : (
           <HScroll>
             {current && <ItemTile item={current} width={104} selected onPress={onClose} />}
             {alts?.map(i => <ItemTile key={i.id} item={i} width={104} onPress={() => onPick(i)} />)}

@@ -2,7 +2,9 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Image, Pressable, View } from 'react-native';
 
+import { errorMessage } from '@/api/errors';
 import { useCompleteOnboarding, useProfile, useSetPersonPhoto } from '@/api/hooks';
+import { useAttempt } from '@/api/useAttempt';
 import { Icon } from '@/components/Icon';
 import { useToast } from '@/components/Toast';
 import { Btn, IconBtn, Row, Screen, T } from '@/components/ui';
@@ -21,6 +23,7 @@ export default function Setup() {
   const { data: profile } = useProfile();
   const setPhoto = useSetPersonPhoto();
   const complete = useCompleteOnboarding();
+  const attempt = useAttempt();
   const [draft, setDraft] = useState<string>();
 
   const photo = draft ?? profile?.personPhotoUri;
@@ -40,13 +43,14 @@ export default function Setup() {
       } else {
         router.replace('/');
       }
-    } catch {
-      toast("Couldn't save your photo. Try again.");
+    } catch (error) {
+      toast(errorMessage(error, "Couldn't save your photo. Try again."));
     }
   };
 
   const remove = async () => {
-    await setPhoto.mutateAsync(null);
+    const profileAfter = await attempt(() => setPhoto.mutateAsync(null), "Couldn't remove your photo. Try again.");
+    if (!profileAfter) return;
     setDraft(undefined);
     toast('Photo removed');
   };

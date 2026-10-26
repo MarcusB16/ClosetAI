@@ -1,7 +1,6 @@
 import type { ClosetApi } from './ClosetApi';
-import { MockClosetApi } from './mock/MockClosetApi';
+import { createApi } from './createApi';
 
-/** Swap this for an HTTP implementation once the backend exists. */
-export const api: ClosetApi = new MockClosetApi();
+export const api: ClosetApi = createApi(process.env.EXPO_PUBLIC_API_BASE_URL);
 
 export type { ClosetApi };
