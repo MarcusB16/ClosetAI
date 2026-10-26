@@ -1,11 +1,13 @@
 using ClosetAPI.Application.Dtos.TryOns.GetTryOn;
+using ClosetAPI.Domain.Items;
+using ClosetAPI.Domain.Outfits;
+using ClosetAPI.Domain.Persistence;
 using ClosetAPI.Domain.TryOns;
+using ClosetAPI.Domain.Users;
 using ClosetAPI.Infrastructure.Media;
 using ClosetAPI.Infrastructure.OpenApi;
 using ClosetAPI.Infrastructure.OpenApi.Examples;
-using ClosetAPI.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace ClosetAPI.Application.Controllers;
 
@@ -13,7 +15,11 @@ namespace ClosetAPI.Application.Controllers;
 [Route("api/outfits/{id}/try-on")]
 [Tags("Try-on")]
 public class TryOnController(
-    ClosetDbContext db,
+    IOutfitRepository outfits,
+    IItemRepository items,
+    IUserStateRepository userStates,
+    ITryOnRenderRepository tryOnRenders,
+    IUnitOfWork unitOfWork,
     ITryOnRenderer renderer,
     MediaUrlResolver mediaUrls,
     TimeProvider clock,
@@ -27,26 +33,24 @@ public class TryOnController(
     [ResponseExample<TryOnReadyExample>(StatusCodes.Status200OK)]
     public async Task<TryOnResult> TryOn(string id, CancellationToken cancellationToken)
     {
-        var outfit = await db.GetOutfitAsync(id, cancellationToken);
-        var state = await db.GetUserStateAsync(cancellationToken);
+        var outfit = await outfits.GetAsync(id, cancellationToken);
+        var state = await userStates.GetOrCreateAsync(cancellationToken);
         if (string.IsNullOrEmpty(state.PersonPhotoFile))
             return new TryOnResult { Status = TryOnStatus.NeedsPhoto, Message = "Upload a full-body photo first." };
 
         var piecesKey = outfit.Pieces.Key();
-        var cached = await db.TryOnRenders.FirstOrDefaultAsync(
-            render => render.OutfitId == outfit.Id && render.PiecesKey == piecesKey && render.PersonPhotoFile == state.PersonPhotoFile,
-            cancellationToken);
+        var cached = await tryOnRenders.FindAsync(outfit.Id, piecesKey, state.PersonPhotoFile, cancellationToken);
         if (cached is not null) return Ready(cached.ImageFile, cached.Placeholder);
 
         try
         {
-            var closet = await db.LoadClosetAsync(cancellationToken);
+            var closet = await items.ListNewestFirstAsync(cancellationToken);
             var pieces = closet.Where(item => outfit.Pieces.AllIds().Contains(item.Id)).ToList();
             var rendered = await renderer.RenderAsync(state.PersonPhotoFile, pieces, cancellationToken);
 
-            db.TryOnRenders.Add(new TryOnRender
+            tryOnRenders.Add(new TryOnRender
             {
-                Id = ClosetDbContextExtensions.NewId(),
+                Id = EntityId.New(),
                 OutfitId = outfit.Id,
                 PiecesKey = piecesKey,
                 PersonPhotoFile = state.PersonPhotoFile,
@@ -54,7 +58,7 @@ public class TryOnController(
                 Placeholder = rendered.Placeholder,
                 CreatedAt = clock.GetUtcNow(),
             });
-            await db.SaveChangesAsync(cancellationToken);
+            await unitOfWork.SaveChangesAsync(cancellationToken);
             return Ready(rendered.ImageFile, rendered.Placeholder);
         }
         catch (Exception exception) when (exception is not OperationCanceledException)

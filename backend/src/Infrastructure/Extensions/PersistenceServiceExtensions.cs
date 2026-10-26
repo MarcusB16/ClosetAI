@@ -1,3 +1,9 @@
+using ClosetAPI.Domain.Items;
+using ClosetAPI.Domain.Outfits;
+using ClosetAPI.Domain.Persistence;
+using ClosetAPI.Domain.TryOns;
+using ClosetAPI.Domain.Users;
+using ClosetAPI.Domain.Wears;
 using ClosetAPI.Infrastructure.Persistence;
 using ClosetAPI.Infrastructure.Seed;
 using Microsoft.EntityFrameworkCore;
@@ -23,6 +29,12 @@ public static class PersistenceServiceExtensions
         else
             throw new InvalidOperationException($"Unsupported {ProviderKey} '{provider}'. Use 'SqlServer' or 'Sqlite'.");
 
+        services.AddScoped<IItemRepository, ItemRepository>();
+        services.AddScoped<IOutfitRepository, OutfitRepository>();
+        services.AddScoped<IWearRepository, WearRepository>();
+        services.AddScoped<ITryOnRenderRepository, TryOnRenderRepository>();
+        services.AddScoped<IUserStateRepository, UserStateRepository>();
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<DemoDataSeeder>();
         return services;
     }

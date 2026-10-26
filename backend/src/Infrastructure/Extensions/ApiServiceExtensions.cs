@@ -1,10 +1,10 @@
 using ClosetAPI.Domain.Context;
 using ClosetAPI.Domain.Media;
+using ClosetAPI.Domain.Outfits;
 using ClosetAPI.Infrastructure.Context;
 using ClosetAPI.Infrastructure.Http;
 using ClosetAPI.Infrastructure.Media;
 using ClosetAPI.Infrastructure.OpenApi;
-using ClosetAPI.Infrastructure.Styling;
 
 namespace ClosetAPI.Infrastructure.Extensions;
 

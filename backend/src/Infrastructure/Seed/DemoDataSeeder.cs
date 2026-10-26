@@ -2,6 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using ClosetAPI.Domain.Items;
 using ClosetAPI.Domain.Outfits;
+using ClosetAPI.Domain.Persistence;
 using ClosetAPI.Domain.Users;
 using ClosetAPI.Domain.Wears;
 using ClosetAPI.Infrastructure.Persistence;
@@ -107,7 +108,7 @@ public class DemoDataSeeder(ClosetDbContext db, TimeProvider clock)
 
     private static Outfit TodaysOutfit(List<string> ids, List<Item> items, DateOnly today, DateTimeOffset now) => new()
     {
-        Id = ClosetDbContextExtensions.NewId(),
+        Id = EntityId.New(),
         Title = $"{today.DayOfWeek}{TodayTitleSuffix}",
         Note = TodayNote,
         Pieces = PiecesBuilder.FromIds(ids, items),

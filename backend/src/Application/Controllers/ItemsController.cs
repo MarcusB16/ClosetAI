@@ -4,10 +4,10 @@ using ClosetAPI.Application.Dtos.Shared;
 using ClosetAPI.Application.Mapping;
 using ClosetAPI.Domain.Items;
 using ClosetAPI.Domain.Media;
+using ClosetAPI.Domain.Persistence;
 using ClosetAPI.Infrastructure.Media;
 using ClosetAPI.Infrastructure.OpenApi;
 using ClosetAPI.Infrastructure.OpenApi.Examples;
-using ClosetAPI.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ClosetAPI.Application.Controllers;
@@ -16,7 +16,8 @@ namespace ClosetAPI.Application.Controllers;
 [Route("api/items")]
 [Tags("Items")]
 public class ItemsController(
-    ClosetDbContext db,
+    IItemRepository items,
+    IUnitOfWork unitOfWork,
     TimeProvider clock,
     IMediaStore mediaStore,
     IBackgroundRemover backgroundRemover,
@@ -30,8 +31,8 @@ public class ItemsController(
     [ResponseExample<ItemListExample>(StatusCodes.Status200OK)]
     public async Task<ActionResult<List<ItemResponse>>> List(CancellationToken cancellationToken)
     {
-        var items = await db.LoadClosetAsync(cancellationToken);
-        return items.Select(item => item.ToResponse()).ToList();
+        var closet = await items.ListNewestFirstAsync(cancellationToken);
+        return closet.Select(item => item.ToResponse()).ToList();
     }
 
     [HttpPost]
@@ -44,9 +45,9 @@ public class ItemsController(
     [ResponseExample<ItemExample>(StatusCodes.Status201Created)]
     public async Task<ActionResult<ItemResponse>> Create(NewItem newItem, CancellationToken cancellationToken)
     {
-        var item = newItem.ToEntity(ClosetDbContextExtensions.NewId(), clock.GetUtcNow());
-        db.Items.Add(item);
-        await db.SaveChangesAsync(cancellationToken);
+        var item = newItem.ToEntity(EntityId.New(), clock.GetUtcNow());
+        items.Add(item);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
         return CreatedAtAction(nameof(Get), new { id = item.Id }, item.ToResponse());
     }
 
@@ -56,7 +57,7 @@ public class ItemsController(
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound, "application/problem+json")]
     [ResponseExample<ItemExample>(StatusCodes.Status200OK)]
     public async Task<ItemResponse> Get(string id, CancellationToken cancellationToken) =>
-        (await db.GetItemAsync(id, cancellationToken)).ToResponse();
+        (await items.GetAsync(id, cancellationToken)).ToResponse();
 
     [HttpPost("analyze")]
     [EndpointSummary("Analyze an item photo")]

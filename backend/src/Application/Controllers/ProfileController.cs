@@ -3,10 +3,10 @@ using ClosetAPI.Application.Dtos.Shared;
 using ClosetAPI.Application.Mapping;
 using ClosetAPI.Domain.Users;
 using ClosetAPI.Domain.Media;
+using ClosetAPI.Domain.Persistence;
 using ClosetAPI.Infrastructure.Media;
 using ClosetAPI.Infrastructure.OpenApi;
 using ClosetAPI.Infrastructure.OpenApi.Examples;
-using ClosetAPI.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ClosetAPI.Application.Controllers;
@@ -14,7 +14,11 @@ namespace ClosetAPI.Application.Controllers;
 [ApiController]
 [Route("api/profile")]
 [Tags("Profile")]
-public class ProfileController(ClosetDbContext db, IMediaStore mediaStore, MediaUrlResolver mediaUrls) : ControllerBase
+public class ProfileController(
+    IUserStateRepository userStates,
+    IUnitOfWork unitOfWork,
+    IMediaStore mediaStore,
+    MediaUrlResolver mediaUrls) : ControllerBase
 {
     [HttpGet]
     [EndpointSummary("Get the profile")]
@@ -22,7 +26,7 @@ public class ProfileController(ClosetDbContext db, IMediaStore mediaStore, Media
     [ProducesResponseType<Profile>(StatusCodes.Status200OK)]
     [ResponseExample<ProfileExample>(StatusCodes.Status200OK)]
     public async Task<ActionResult<Profile>> Get(CancellationToken cancellationToken) =>
-        ToProfile(await db.GetUserStateAsync(cancellationToken));
+        ToProfile(await userStates.GetOrCreateAsync(cancellationToken));
 
     [HttpPatch]
     [EndpointSummary("Update the profile")]
@@ -34,9 +38,9 @@ public class ProfileController(ClosetDbContext db, IMediaStore mediaStore, Media
     [ResponseExample<ProfileExample>(StatusCodes.Status200OK)]
     public async Task<ActionResult<Profile>> Update(UpdateProfileRequest request, CancellationToken cancellationToken)
     {
-        var state = await db.GetUserStateAsync(cancellationToken);
+        var state = await userStates.GetOrCreateAsync(cancellationToken);
         if (request.Onboarded is { } onboarded) state.Onboarded = onboarded;
-        await db.SaveChangesAsync(cancellationToken);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
         return ToProfile(state);
     }
 
@@ -50,9 +54,9 @@ public class ProfileController(ClosetDbContext db, IMediaStore mediaStore, Media
     public async Task<ActionResult<Profile>> UploadPersonPhoto([FromForm] PhotoUpload upload, CancellationToken cancellationToken)
     {
         var photo = await PhotoUploadReader.ReadAsync(upload.Photo, cancellationToken);
-        var state = await db.GetUserStateAsync(cancellationToken);
+        var state = await userStates.GetOrCreateAsync(cancellationToken);
         state.PersonPhotoFile = await mediaStore.SaveAsync(photo, cancellationToken);
-        await db.SaveChangesAsync(cancellationToken);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
         return ToProfile(state);
     }
 
@@ -62,9 +66,9 @@ public class ProfileController(ClosetDbContext db, IMediaStore mediaStore, Media
     [ProducesResponseType<Profile>(StatusCodes.Status200OK)]
     public async Task<ActionResult<Profile>> DeletePersonPhoto(CancellationToken cancellationToken)
     {
-        var state = await db.GetUserStateAsync(cancellationToken);
+        var state = await userStates.GetOrCreateAsync(cancellationToken);
         state.PersonPhotoFile = null;
-        await db.SaveChangesAsync(cancellationToken);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
         return ToProfile(state);
     }
 
