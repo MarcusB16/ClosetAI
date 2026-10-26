@@ -6,15 +6,15 @@ import { useItemMap, useSaved, useWorn } from '@/api/hooks';
 import { Garment } from '@/components/Garment';
 import { Icon } from '@/components/Icon';
 import { MiniBoard, PieceRow, resolvePieces } from '@/components/Board';
-import { Screen, T } from '@/components/ui';
+import { ErrorState, Loading, Screen, T } from '@/components/ui';
 import { isoDay, parseDay, weekdayShort } from '@/domain/dates';
 import { fonts, useTheme } from '@/theme';
 
 export default function Outfits() {
   const t = useTheme();
   const [tab, setTab] = useState<'worn' | 'saved'>('worn');
-  const { data: worn = [] } = useWorn();
-  const { data: saved = [] } = useSaved();
+  const { data: worn = [], isLoading: wornLoading, isError: wornFailed, refetch: refetchWorn } = useWorn();
+  const { data: saved = [], isLoading: savedLoading, isError: savedFailed, refetch: refetchSaved } = useSaved();
   const itemMap = useItemMap();
 
   const counts = new Map<string, number>();
@@ -23,6 +23,8 @@ export default function Outfits() {
   const top = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
   const topItem = top ? itemMap.get(top[0]) : undefined;
   const today = isoDay();
+
+  if (wornLoading && savedLoading) return <Loading />;
 
   return (
     <Screen>
@@ -48,9 +50,10 @@ export default function Outfits() {
               </T>
             </View>
           )}
-          {worn.length === 0 && <T tone="muted">Outfits you wear show up here. Tap “Wear this” on any outfit to log it.</T>}
+          {wornFailed && worn.length === 0 && <ErrorState message="Couldn't load your worn outfits." onRetry={() => refetchWorn()} />}
+          {!wornFailed && worn.length === 0 && <T tone="muted">Outfits you wear show up here. Tap “Wear this” on any outfit to log it.</T>}
           {worn.map(w => (
-            <Pressable key={w.date} onPress={() => router.push(`/outfit/${w.outfit.id}`)} accessibilityRole="button"
+            <Pressable key={`${w.date}-${w.outfitId}`} onPress={() => router.push(`/outfit/${w.outfit.id}`)} accessibilityRole="button"
               style={{ flexDirection: 'row', gap: 12, alignItems: 'center', paddingVertical: 10, borderBottomWidth: 1, borderColor: t.line }}>
               <View style={{ width: 44 }}>
                 <T variant="label">{weekdayShort(w.date)}</T>
@@ -65,7 +68,8 @@ export default function Outfits() {
         </View>
       ) : (
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', rowGap: 16 }}>
-          {saved.length === 0 && <T tone="muted">Tap the heart on an outfit to save it here.</T>}
+          {savedFailed && saved.length === 0 && <ErrorState message="Couldn't load your saved outfits." onRetry={() => refetchSaved()} />}
+          {!savedFailed && saved.length === 0 && <T tone="muted">Tap the heart on an outfit to save it here.</T>}
           {saved.map(o => (
             <Pressable key={o.id} onPress={() => router.push(`/outfit/${o.id}`)} accessibilityRole="button" style={{ width: '48.5%', gap: 6 }}>
               <MiniBoard pieces={resolvePieces(o, itemMap)} />

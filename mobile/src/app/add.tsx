@@ -3,7 +3,9 @@ import { useEffect, useState } from 'react';
 import { Animated, Image, Pressable, StyleSheet, TextInput, View } from 'react-native';
 
 import { api } from '@/api';
+import { errorMessage } from '@/api/errors';
 import { useAddItem } from '@/api/hooks';
+import { useAttempt } from '@/api/useAttempt';
 import { Icon } from '@/components/Icon';
 import { useToast } from '@/components/Toast';
 import { Btn, Chip, IconBtn, Row, Screen, T } from '@/components/ui';
@@ -19,7 +21,7 @@ const DEFAULTS: Record<Category, { slot: Slot; type: GarmentType }> = {
   accessories: { slot: 'acc', type: 'tote' },
   formal: { slot: 'top', type: 'shirt' },
 };
-const LEVELS = [['Casual', 1], ['Smart casual', 1.5], ['Work', 2.2], ['Formal', 3]] as const;
+const LEVELS = [['Casual', 1], ['Smart casual', 2], ['Formal', 3]] as const;
 const SEASONS = ['Spring', 'Summer', 'Fall', 'Winter'];
 
 type Step = 'capture' | 'analyzing' | 'details';
@@ -28,10 +30,11 @@ export default function AddItem() {
   const t = useTheme();
   const toast = useToast();
   const addItem = useAddItem();
+  const attempt = useAttempt();
   const [step, setStep] = useState<Step>('capture');
   const [photo, setPhoto] = useState<string>();
   const [s, setS] = useState<ItemSuggestion>();
-  const [form, setForm] = useState({ name: '', brand: '', size: '', colorName: '', category: 'shirts' as Category, formality: 1.5, seasons: [] as string[] });
+  const [form, setForm] = useState({ name: '', brand: '', size: '', colorName: '', category: 'shirts' as Category, formality: 2, seasons: [] as string[] });
   const set = <K extends keyof typeof form>(k: K, v: (typeof form)[K]) => setForm(f => ({ ...f, [k]: v }));
 
   const take = async (source: 'camera' | 'library') => {
@@ -44,22 +47,23 @@ export default function AddItem() {
       setS(sug);
       setForm(f => ({ ...f, name: sug.name, brand: sug.brand ?? '', colorName: sug.colorName, category: sug.category, formality: sug.formality, seasons: sug.seasons }));
       setStep('details');
-    } catch {
-      toast("Couldn't read that photo. Try again in better light.");
+    } catch (error) {
+      toast(errorMessage(error, "Couldn't read that photo. Try again in better light."));
       setStep('capture');
     }
   };
 
   const save = async () => {
     if (!s) return;
-    const d = DEFAULTS[form.category];
+    const d = form.category === s.category ? { slot: s.slot ?? DEFAULTS[form.category].slot, type: s.type ?? DEFAULTS[form.category].type } : DEFAULTS[form.category];
     const name = form.name.trim() || `New ${CATEGORY_LABEL[form.category].toLowerCase().replace(/s$/, '')}`;
-    await addItem.mutateAsync({
+    const added = await attempt(() => addItem.mutateAsync({
       name, brand: form.brand.trim() || 'Unknown', size: form.size.trim() || '—',
       category: form.category, slot: d.slot, type: d.type, imageUri: s.cutoutUri,
       color: s.color, colorName: form.colorName.trim() || 'Unknown', formality: form.formality,
       fabric: s.fabric ?? 'Not set', seasons: form.seasons,
-    });
+    }), "Couldn't add this piece. Try again.");
+    if (!added) return;
     toast(`${name} is in your closet`);
     router.back();
     router.navigate('/closet');
