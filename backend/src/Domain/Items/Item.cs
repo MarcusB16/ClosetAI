@@ -12,7 +12,7 @@ public class Item
     public Dictionary<string, string>? Variant { get; set; }
     public string Color { get; set; } = "";
     public string ColorName { get; set; } = "";
-    public double Formality { get; set; }
+    public int Formality { get; set; }
     public string Fabric { get; set; } = "";
     public string Size { get; set; } = "";
     public decimal? Price { get; set; }
@@ -23,4 +23,6 @@ public class Item
     public bool? NoRain { get; set; }
     public List<string>? Seasons { get; set; }
     public DateTimeOffset AddedAt { get; set; }
+
+    public bool IsWatch => Type == GarmentTypes.Watch;
 }
